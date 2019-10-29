@@ -130,7 +130,7 @@ output debugStall;
 	 
 	 d_pipe_reg dx_latch(.data_inA(dlatch_in_a),.we(dxWE),.data_inB(dlatch_in_b), .clk(clock), .pc_in(fdPCOut),.reset(reset),.data_outA(dxA),.data_outB(dxB),.pc_out(dxPCOut),.instruction_out(dxIR),.instruction_in(dx_instr_in));
 	
-	 dxDecoder dx_decoder(.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmO),.mwOVR(data_writeReg),
+	 dxDecoder dx_decoder(.pc(dxPCOut),.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmO),.mwOVR(data_writeReg),
 	 .outA(xA),.outB(xB),.aluOp(aluOp),.shamt(aluShamt),.isMult(isMult),.isDiv(isDiv),.isJump(overWrite),.jumpAmt(pcIn));
 	 
 	 alu myAlu(.data_operandA(xA),.data_operandB(xB),.ctrl_ALUopcode(aluOp),.ctrl_shiftamt(aluShamt),.data_result(aluOut),.isNotEqual(aluNE),.isLessThan(aluLT),.overflow(aluOvf));
@@ -198,7 +198,7 @@ output debugStall;
 	 assign debugDX=dxIR;
 	 assign debugXM=xmIR;
 	 assign debugMW=mwIR;
-	 assign debugALUinA=xA;
+	 assign debugALUinA=pcOut;
 	 assign debugALUinB=xB;
 	 assign debugStall=multReady;
 	 
