@@ -1,10 +1,11 @@
-module rwHazardController(inFD,inDX,inXM,inMW,xmOverwriteDXRS,xmOverwriteDXRT,mwOverwriteDXRS,mwOverwriteDXRT,overWriteXMRD,overWriteRegA,overWriteRegB/*,debug_mwWritesRD,debug_xmWritesRD,
+module rwHazardController(inFD,inDX,inXM,inMW,xmOverwriteDXRS,xmOverwriteDXRT,mwOverwriteDXRS,mwOverwriteDXRT,overWriteXMRD,overWriteRegA,overWriteRegB,ovfXM,ovfMW/*,debug_mwWritesRD,debug_xmWritesRD,
 debug_rtDXCompXM,debug_rtDXCompMW,debug_rsDXCompXM,debug_rsDXCompMW,debug_rdXMCompMW*/
 );
 
 
 
 input[31:0]inFD,inDX,inXM,inMW;
+input ovfXM,ovfMW;
 output xmOverwriteDXRS,xmOverwriteDXRT,mwOverwriteDXRS,mwOverwriteDXRT,overWriteXMRD,overWriteRegA,overWriteRegB;
 
 //DEBUGS-------------------------
@@ -22,20 +23,45 @@ assign debug_mwWritesRD=mwWritesRD;
 assign debug_xmWritesRD=xmWritesRD;
 */
 //---------------------------------------
-wire[4:0] rsFD,rtFD,rdXM,rdMW,rsDX,rsXM,rtDX,rtXM;
-wire mwWritesRD,xmWritesRD,xmUsesRT,dxUsesRT,dxMatchRT_MW,dxMatchRT_XM,dxMatchRS_MW,dxMatchRS_XM,xmMatchRD,rsFDMatch,rtFDMatch;
+wire[4:0] rsFD,rtFD,rdXM,rdMW,rsDX,rsXM,rtDX,rtXM,rdDX,rdXM_NoOVF,rdMW_NoOVF;
+wire mwWritesRD,xmWritesRD,xmUsesRT,dxUsesRT,dxMatchRT_MW,dxMatchRT_XM,dxMatchRD_MW,dxMatchRD_XM,dxMatchRS_MW,dxMatchRS_XM,xmMatchRD,rsFDMatch,rtFDMatch,dxReadsRD;
+wire isMWJal,isXMJal;
 
-assign rdXM=inXM[26:22];
-assign rdMW=inMW[26:22];
+assign isMWJal = ~inMW[31]&~inMW[30]&~inMW[29]&inMW[28]&inMW[27];
+assign isXMJal = ~inXM[31]&~inXM[30]&~inXM[29]&inXM[28]&inXM[27];
+wire [4:0]r30;
+assign r30[4:1]={4{1'b1}};
+assign r30[0]=1'b0;
+
+
+assign rdXM_NoOVF= isXMJal ? r30 : inXM[26:22];
+assign rdMW_NoOVF= isMWJal ? r30 : inMW[26:22];
+
+assign rdXM=ovfXM ? {5{1'b1}} : rdXM_NoOVF;
+assign rdMW = ovfMW ? {5{1'b1}}:rdMW_NoOVF;
+
 
 assign rsDX=inDX[21:17];
-
+assign rdDX=inDX[26:22];
 assign rtDX=inDX[16:12];
 
 assign rsFD=inFD[21:17];
 assign rtFD=inFD[16:12];
 
-wire mw_sw,mw_j,mw_bne,mw_jal,mw_jr,mw_blt,mw_bex,mw_setx;
+wire dx_sw,dx_j,dx_bne,dx_jal,dx_jr,dx_blt,dx_bex,dx_setx;
+assign dx_sw=(~inDX[31]&~inDX[30]&inDX[29]&inDX[28]&inDX[27]);
+assign dx_j=(~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&inDX[27]);
+assign dx_bne=(~inDX[31]&~inDX[30]&~inDX[29]&inDX[28]&~inDX[27]);
+assign dx_jal=(~inDX[31]&~inDX[30]&~inDX[29]&inDX[28]&inDX[27]);
+assign dx_jr=(~inDX[31]&~inDX[30]&inDX[29]&~inDX[28]&~inDX[27]);
+assign dx_blt=(~inDX[31]&~inDX[30]&inDX[29]&inDX[28]&~inDX[27]);
+assign dx_bex=(inDX[31]&~inDX[30]&inDX[29]&inDX[28]&~inDX[27]);
+assign dx_setx=(inDX[31]&~inDX[30]&inDX[29]&inDX[28]&inDX[27]);
+
+assign dxReadsRD= (dx_sw|dx_bne|dx_jr|dx_blt);
+
+
+wire mw_sw,mw_j,mw_bne,mw_jal,mw_jr,mw_blt,mw_bex,mw_setx,mw_noop;
 assign mw_sw=(~inMW[31]&~inMW[30]&inMW[29]&inMW[28]&inMW[27]);
 assign mw_j=(~inMW[31]&~inMW[30]&~inMW[29]&~inMW[28]&inMW[27]);
 assign mw_bne=(~inMW[31]&~inMW[30]&~inMW[29]&inMW[28]&~inMW[27]);
@@ -44,10 +70,16 @@ assign mw_jr=(~inMW[31]&~inMW[30]&inMW[29]&~inMW[28]&~inMW[27]);
 assign mw_blt=(~inMW[31]&~inMW[30]&inMW[29]&inMW[28]&~inMW[27]);
 assign mw_bex=(inMW[31]&~inMW[30]&inMW[29]&inMW[28]&~inMW[27]);
 assign mw_setx=(inMW[31]&~inMW[30]&inMW[29]&inMW[28]&inMW[27]);
+assign mw_noop=(~inMW[31]&~inMW[30]&~inMW[29]&~inMW[28]&~inMW[27]&
+					 ~inMW[26]&~inMW[25]&~inMW[24]&~inMW[23]&~inMW[22]&
+					 ~inMW[21]&~inMW[20]&~inMW[19]&~inMW[18]&~inMW[17]&
+					 ~inMW[16]&~inMW[15]&~inMW[14]&~inMW[13]&~inMW[12]&
+					 ~inMW[11]&~inMW[10]&~inMW[9]&~inMW[8]&~inMW[7]&~
+					 inMW[6]&~inMW[5]&~inMW[4]&~inMW[3]&~inMW[2]&~inMW[1]&~inMW[0]);
 
-assign mwWritesRD= ~(mw_sw|mw_j|mw_bne|mw_jal|mw_jr|mw_blt|mw_bex|mw_setx);
+assign mwWritesRD= ~(mw_sw|mw_j|mw_bne|mw_jal|mw_jr|mw_blt|mw_bex|mw_setx|mw_noop);
 
-wire xm_sw,xm_j,xm_bne,xm_jal,xm_jr,xm_blt,xm_bex,xm_setx;
+wire xm_sw,xm_j,xm_bne,xm_jal,xm_jr,xm_blt,xm_bex,xm_setx,xm_noop;
 assign xm_sw=(~inXM[31]&~inXM[30]&inXM[29]&inXM[28]&inXM[27]);
 assign xm_j=(~inXM[31]&~inXM[30]&~inXM[29]&~inXM[28]&inXM[27]);
 assign xm_bne=(~inXM[31]&~inXM[30]&~inXM[29]&inXM[28]&~inXM[27]);
@@ -56,15 +88,36 @@ assign xm_jr=(~inXM[31]&~inXM[30]&inXM[29]&~inXM[28]&~inXM[27]);
 assign xm_blt=(~inXM[31]&~inXM[30]&inXM[29]&inXM[28]&~inXM[27]);
 assign xm_bex=(inXM[31]&~inXM[30]&inXM[29]&inXM[28]&~inXM[27]);
 assign xm_setx=(inXM[31]&~inXM[30]&inXM[29]&inXM[28]&inXM[27]);
+assign xm_noop=(~inXM[31]&~inXM[30]&~inXM[29]&~inXM[28]&~inXM[27]&
+					 ~inXM[26]&~inXM[25]&~inXM[24]&~inXM[23]&~inXM[22]&
+					 ~inXM[21]&~inXM[20]&~inXM[19]&~inXM[18]&~inXM[17]&
+					 ~inXM[16]&~inXM[15]&~inXM[14]&~inXM[13]&~inXM[12]&
+					 ~inXM[11]&~inXM[10]&~inXM[9]&~inXM[8]&~inXM[7]&
+					 ~inXM[6]&~inXM[5]&~inXM[4]&~inXM[3]&~inXM[2]&~inXM[1]&~inXM[0]);
 
-assign xmWritesRD= ~(xm_sw|xm_j|xm_bne|xm_jal|xm_jr|xm_blt|xm_bex|xm_setx);
+assign xmWritesRD= ~(xm_sw|xm_j|xm_bne|xm_jal|xm_jr|xm_blt|xm_bex|xm_setx|xm_noop);
 
 wire dx_sll,dx_srr, usesRT;
 assign dx_sll= (~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&~inDX[27])&(~inDX[6]&~inDX[5]&inDX[4]&~inDX[3]&~inDX[2]);
 assign dx_srr= (~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&~inDX[27])&(~inDX[6]&~inDX[5]&inDX[4]&~inDX[3]&inDX[2]);
 assign usesRT=(~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&~inDX[27])&~dx_sll&~dx_srr;
 
-wire [4:0]rtDXCompXM,rtDXCompMW,rsDXCompXM,rsDXCompMW,rdXMCompMW,rsFDComp,rtFDComp;
+wire [4:0]rtDXCompXM,rtDXCompMW,rsDXCompXM,rsDXCompMW,rdXMCompMW,rsFDComp,rtFDComp,rdDXCompXM,rdDXCompMW;
+
+
+xnor(rdDXCompXM[0],rdXM[0],rdDX[0]);
+xnor(rdDXCompXM[1],rdXM[1],rdDX[1]);
+xnor(rdDXCompXM[2],rdXM[2],rdDX[2]);
+xnor(rdDXCompXM[3],rdXM[3],rdDX[3]);
+xnor(rdDXCompXM[4],rdXM[4],rdDX[4]);
+
+xnor(rdDXCompMW[0],rdMW[0],rdDX[0]);
+xnor(rdDXCompMW[1],rdMW[1],rdDX[1]);
+xnor(rdDXCompMW[2],rdMW[2],rdDX[2]);
+xnor(rdDXCompMW[3],rdMW[3],rdDX[3]);
+xnor(rdDXCompMW[4],rdMW[4],rdDX[4]);
+
+
 xnor(rtDXCompXM[0],rdXM[0],rtDX[0]);
 xnor(rtDXCompXM[1],rdXM[1],rtDX[1]);
 xnor(rtDXCompXM[2],rdXM[2],rtDX[2]);
@@ -107,6 +160,8 @@ xnor(rtFDComp[2],rtFD[2],rdMW[2]);
 xnor(rtFDComp[3],rtFD[3],rdMW[3]);
 xnor(rtFDComp[4],rtFD[4],rdMW[4]);
 
+and(dxMatchRD_XM,rdDXCompXM[0],rdDXCompXM[1],rdDXCompXM[2],rdDXCompXM[3],rdDXCompXM[4]);
+and(dxMatchRD_MW,rdDXCompMW[0],rdDXCompMW[1],rdDXCompMW[2],rdDXCompMW[3],rdDXCompMW[4]);
 
 and(dxMatchRT_XM,rtDXCompXM[0],rtDXCompXM[1],rtDXCompXM[2],rtDXCompXM[3],rtDXCompXM[4]);
 and(dxMatchRT_MW,rtDXCompMW[0],rtDXCompMW[1],rtDXCompMW[2],rtDXCompMW[3],rtDXCompMW[4]);
@@ -122,9 +177,9 @@ assign isSW=(~inXM[31]&~inXM[30]&inXM[29]&inXM[28]&inXM[27]);
 
 assign overWriteXMRD= isSW & xmMatchRD & mwWritesRD;
 assign xmOverwriteDXRS = xmWritesRD & dxMatchRS_XM;
-assign xmOverwriteDXRT = xmWritesRD & dxMatchRT_XM & usesRT;
+assign xmOverwriteDXRT = xmWritesRD & ((dxMatchRT_XM & usesRT)|(dxMatchRD_XM & dxReadsRD));
 assign mwOverwriteDXRS = mwWritesRD & dxMatchRS_MW;
-assign mwOverwriteDXRT = mwWritesRD & dxMatchRT_MW & usesRT;
+assign mwOverwriteDXRT = mwWritesRD & ((dxMatchRT_MW & usesRT)|(dxMatchRD_MW & dxReadsRD));
 
 assign overWriteRegA = mwWritesRD & rsFDMatch;
 assign overWriteRegB = mwWritesRD & rtFDMatch;

@@ -110,57 +110,100 @@ output debugStall;
 	 wire clockinv;
 	 not(clockinv,clock);
 	 wire [31:0]pcOut,pcIn,fdPCOut,fdIR,dxA,dxB,dxPCOut,dxIR,xA,xB,aluOut,xmO,xmB,xmIR,mwO,mwD,mwIR;
-	 wire overWrite,aluNE,aluLT,aluOvf,isMult,isDiv;
+	 wire overWriteFD,overWriteDX,aluNE,aluLT,aluOvf,isMult,isDiv;
 	 wire [4:0]aluOp,aluShamt;
 	 
 //	 assign overWrite=1'b0;//TODO: channge overwrite signal when jump + branch is implemented
 	 
-	 programCounter pc(.clk(clock),.out(pcOut),.overwrite(overWrite),.overwrite_in(pcIn),.reset(reset),.we(pcWE));
-	 assign address_imem=pcOut;
+	 programCounter pc(.clk(clock),.out(pcOut),.overwrite(overWriteFD|overWriteDX),.overwrite_in(pcIn),.reset(reset),.we(pcWE));
+	 assign address_imem=pcOut[11:0];
 	 
-	 wire [31:0]fd_instr_in,dx_instr_in;
-	 assign fd_instr_in= overWrite ?{32{1'b0}} : q_imem;
+	 wire [31:0]fd_instr_in,fd_decoder_pc_out,fd_instr_out,dx_decoder_pc_out,dx_inst_in;
+	 assign fd_instr_in= (overWriteFD|overWriteDX) ?{32{1'b0}} : q_imem;
 	 f_pipe_reg fd_latch (.data_in(fd_instr_in),.we(fdWE), .clk(clock), .pc_in(pcOut),.reset(reset), .pc_out(fdPCOut),.instruction_out(fdIR));
 	 
-	 wire [31:0] fdDecoderInput;
+	 wire [31:0] fdDecoderInput, branchPC;
 	 assign fdDecoderInput = stall ? {32{1'b0}} : fdIR;
-	 fdDecoder fd_decoder(.instruction(fdDecoderInput),.readRegA(ctrl_readRegA),.readRegB(ctrl_readRegB));
-	 
-	 assign dx_instr_in= overWrite? {32{1'b0}}:fdDecoderInput;
-	 
-	 d_pipe_reg dx_latch(.data_inA(dlatch_in_a),.we(dxWE),.data_inB(dlatch_in_b), .clk(clock), .pc_in(fdPCOut),.reset(reset),.data_outA(dxA),.data_outB(dxB),.pc_out(dxPCOut),.instruction_out(dxIR),.instruction_in(dx_instr_in));
+	 wire isJB;
 	
-	 dxDecoder dx_decoder(.pc(dxPCOut),.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmO),.mwOVR(data_writeReg),
-	 .outA(xA),.outB(xB),.aluOp(aluOp),.shamt(aluShamt),.isMult(isMult),.isDiv(isDiv),.isJump(overWrite),.jumpAmt(pcIn));
+
+	fdDecoder fd_decoder(.instruction(fdDecoderInput),.readRegA(ctrl_readRegA),.readRegB(ctrl_readRegB), 
+	                     .isJB(isJB),.pcOut(fd_decoder_pc_out),.pcIn(fdPCOut),.instructionOut(fd_instr_out));
+								
+	assign overWriteFD=isJB;
+	assign pcIn= overWriteDX ? dx_decoder_pc_out: fd_decoder_pc_out;
+	 assign dx_inst_in= overWriteDX ?{32{1'b0}} :fd_instr_out;
+
+
+	 d_pipe_reg dx_latch(.data_inA(dlatch_in_a),.we(dxWE),.data_inB(dlatch_in_b), .clk(clock), .pc_in(fdPCOut),.reset(reset),.data_outA(dxA),.data_outB(dxB)
+	 ,.pc_out(dxPCOut),.instruction_out(dxIR),.instruction_in(dx_inst_in));
+	
+
+	wire dx_isJR,dx_isBLT,dx_isBNE,dx_BEX,branchOverwrite;
+	wire[31:0]dx_jrAmt,dx_regBOut;
+	dxDecoder dx_decoder(.pc(dxPCOut),.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmO),.mwOVR(data_writeReg),
+	 .outA(xA),.outB(xB),.aluOp(aluOp),.shamt(aluShamt),.isMult(isMult),.isDiv(isDiv),
+	 .isJR(dx_isJR),.isBLT(dx_isBLT),.isBNE(dx_isBNE),.jrAmt(dx_jrAmt),.regBOut(dx_regBOut),.isBEX(dx_BEX));
 	 
+
+
+
+
+
 	 alu myAlu(.data_operandA(xA),.data_operandB(xB),.ctrl_ALUopcode(aluOp),.ctrl_shiftamt(aluShamt),.data_result(aluOut),.isNotEqual(aluNE),.isLessThan(aluLT),.overflow(aluOvf));
-	 /*MULTIPLIER*/
+	
+
+	assign branchOverwrite = (dx_isBNE & ~aluNE)|(dx_isBLT & ~aluLT)|(dx_BEX & ~aluNE);
+	assign dx_decoder_pc_out = dx_jrAmt;
+	assign overWriteDX=branchOverwrite|dx_isJR;
+
+
+
+
+
+	/*MULTIPLIER*/
 	 multdiv multiplier (.data_operandA(xA), .data_operandB(xB), .ctrl_MULT(isMult), .ctrl_DIV(isDiv), .clock(clockinv), .data_result(multOut), .data_exception(multException), .data_resultRDY(multReady));
 	 wire[31:0]multOut,multInstruction;
-	 wire multException,multReady,multInProgress;
+	 wire multException,multReady,multInProgress, xm_ovf;
 	 wire [31:0]x_latch_instruciton_in;
 	 assign x_latch_instruciton_in= (isMult|isDiv) ?{32{1'b0}}:dxIR;
 	 
 	 multdivLatch multDivLatch(.in(dxIR),.we(isMult|isDiv),.clock(clockinv),.out(multInstruction),.reset(reset),.done(multReady|multException),.inProgress(multInProgress));
 	 
-	 x_pipe_reg xm_latch (.dataA(aluOut),.dataB(dxB),.we(xmWE), .clk(clock),.reset(reset),.data_outA(xmO),.data_outB(xmB),.instruction_in(x_latch_instruciton_in),.instruction_out(xmIR)); 
+	 x_pipe_reg xm_latch (.dataA(aluOut),.dataB(dx_regBOut),.we(xmWE), .clk(clock),.reset(reset),.data_outA(xmO),.data_outB(xmB),.instruction_in(x_latch_instruciton_in),.instruction_out(xmIR),.ovf_in(aluOvf),.ovf_out(xm_ovf)); 
 	 
 	 xmDecoder xm_decoder(.instruction(xmIR),.we(wren));
 	 assign address_dmem=xmO[11:0];
 	 assign data=xmB;
 	 
 	 
-	 m_pipe_reg mw_latch (.dataO(xmO),.dataD(q_dmem),.we(mwWE), .clk(clock),.reset(reset),.data_outO(mwO),.data_outD(mwD),.instruction_in(xmIR),.instruction_out(mwIR));
+	 m_pipe_reg mw_latch (.dataO(xmO),.dataD(q_dmem),.we(mwWE), .clk(clock),.reset(reset),.data_outO(mwO),.data_outD(mwD),.instruction_in(xmIR),.instruction_out(mwIR),.ovf_in(xm_ovf),.ovf_out(mw_ovf));
 	 
-	 mwDecoder mw_decoder(.o(mwO),.d(mwD),.instruction(mwIR),.data(mwDataWriteReg),.writeReg(mwWriteReg),.we(mwRegWE));
+	 mwDecoder mw_decoder(.o(mwO),.d(mwD),.instruction(mwIR),.data(mwDataWriteReg),.writeReg(mwWriteReg),.we(mwRegWE),.ovf(mw_ovf));
 	 
-	 wire[4:0]mwWriteReg;
-	 wire[31:0]mwDataWriteReg;
-	 wire mwRegWE;
+	 wire[4:0]mwWriteReg,multReg;
+	 wire[31:0]mwDataWriteReg,four,five;
+	 assign four[31:3]={29{1'b0}};
+	 assign four [2]=1'b1;
+	 assign four [1:0]={2{1'b0}};
+	 assign five[31:3]={29{1'b0}};
+	 assign five [2]=1'b1;
+	 assign five[1]=1'b0;
+	 assign five[0]=1'b1;
 	 
-	 assign data_writeReg=multReady ? multOut :mwDataWriteReg;// TODO: RSTATUS WRITE ERROR IF ERROR OCCURRED
-	 assign ctrl_writeReg= multReady? multInstruction[26:22] : mwWriteReg;//TODO: RSTATUS
-	 assign ctrl_writeEnable = multReady|mwRegWE;//TODO RSTATUS
+	 assign multReg = multException ? {5{1'b1}} : multInstruction[26:22] ;
+	 
+	 wire mwRegWE,mw_ovf;
+	 wire isDivOp;
+	 
+	 wire [31:0]multData,multE;
+	 assign isDivOp = multInstruction[2]; 
+	 assign multE= isDivOp ? five : four; 
+	 assign multData = multReady ? multOut : multE;
+	 
+	 assign data_writeReg=(multReady|multException) ? multData :mwDataWriteReg;// TODO: RSTATUS WRITE ERROR IF ERROR OCCURRED
+	 assign ctrl_writeReg= multReady? multReg : mwWriteReg;//TODO: RSTATUS
+	 assign ctrl_writeEnable = multReady|multException|mwRegWE;//TODO RSTATUS
 	 
 	 
 	 /*HAZARD CONTROLLS*/
@@ -179,8 +222,8 @@ output debugStall;
 	 
 	 assign stallInv=~stall;
 	 
-	 assign dlatch_in_a = /*overwriteFDRS ? data_writeReg :*/ data_readRegA;
-	 assign dlatch_in_b = /*overwriteFDRT ? data_writeReg :*/ data_readRegB;
+	 assign dlatch_in_a =  data_readRegA;
+	 assign dlatch_in_b =  data_readRegB;
 	 /*EXCEPTION HANDLING*/
 	 wire exception;
 	 wire[31:0]exceptionVal;
@@ -198,8 +241,8 @@ output debugStall;
 	 assign debugDX=dxIR;
 	 assign debugXM=xmIR;
 	 assign debugMW=mwIR;
-	 assign debugALUinA=pcOut;
-	 assign debugALUinB=xB;
-	 assign debugStall=multReady;
+	 assign debugALUinA=pcIn;
+	 assign debugALUinB=pcOut;
+	 assign debugStall=isMult;
 	 
 endmodule
