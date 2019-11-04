@@ -25,10 +25,13 @@ assign debug_xmWritesRD=xmWritesRD;
 //---------------------------------------
 wire[4:0] rsFD,rtFD,rdXM,rdMW,rsDX,rsXM,rtDX,rtXM,rdDX,rdXM_NoOVF,rdMW_NoOVF;
 wire mwWritesRD,xmWritesRD,xmUsesRT,dxUsesRT,dxMatchRT_MW,dxMatchRT_XM,dxMatchRD_MW,dxMatchRD_XM,dxMatchRS_MW,dxMatchRS_XM,xmMatchRD,rsFDMatch,rtFDMatch,dxReadsRD;
-wire isMWJal,isXMJal;
+wire isMWJal,isXMJal,isMWSetX,isXMSetX,isDXBEX;
 
 assign isMWJal = ~inMW[31]&~inMW[30]&~inMW[29]&inMW[28]&inMW[27];
 assign isXMJal = ~inXM[31]&~inXM[30]&~inXM[29]&inXM[28]&inXM[27];
+assign isMWSetX = inMW[31]&~inMW[30]&inMW[29]&~inMW[28]&inMW[27];
+assign isXMSetX = inXM[31]&~inXM[30]&inXM[29]&~inXM[28]&inXM[27];
+
 wire [4:0]r30;
 assign r30[4:1]={4{1'b1}};
 assign r30[0]=1'b0;
@@ -37,13 +40,13 @@ assign r30[0]=1'b0;
 assign rdXM_NoOVF= isXMJal ? r30 : inXM[26:22];
 assign rdMW_NoOVF= isMWJal ? r30 : inMW[26:22];
 
-assign rdXM=ovfXM ? {5{1'b1}} : rdXM_NoOVF;
-assign rdMW = ovfMW ? {5{1'b1}}:rdMW_NoOVF;
+assign rdXM=(ovfXM|isXMSetX) ? {5{1'b1}} : rdXM_NoOVF;
+assign rdMW = (ovfMW|isMWSetX) ? {5{1'b1}}:rdMW_NoOVF;
 
 
 assign rsDX=inDX[21:17];
 assign rdDX=inDX[26:22];
-assign rtDX=inDX[16:12];
+assign rtDX=dx_bex ?{5{1'b1}} :inDX[16:12];
 
 assign rsFD=inFD[21:17];
 assign rtFD=inFD[16:12];
@@ -77,7 +80,7 @@ assign mw_noop=(~inMW[31]&~inMW[30]&~inMW[29]&~inMW[28]&~inMW[27]&
 					 ~inMW[11]&~inMW[10]&~inMW[9]&~inMW[8]&~inMW[7]&~
 					 inMW[6]&~inMW[5]&~inMW[4]&~inMW[3]&~inMW[2]&~inMW[1]&~inMW[0]);
 
-assign mwWritesRD= ~(mw_sw|mw_j|mw_bne|mw_jal|mw_jr|mw_blt|mw_bex|mw_setx|mw_noop);
+assign mwWritesRD= ~(mw_sw|mw_j|mw_bne|mw_jal|mw_jr|mw_blt|mw_bex|mw_noop);
 
 wire xm_sw,xm_j,xm_bne,xm_jal,xm_jr,xm_blt,xm_bex,xm_setx,xm_noop;
 assign xm_sw=(~inXM[31]&~inXM[30]&inXM[29]&inXM[28]&inXM[27]);
@@ -95,12 +98,12 @@ assign xm_noop=(~inXM[31]&~inXM[30]&~inXM[29]&~inXM[28]&~inXM[27]&
 					 ~inXM[11]&~inXM[10]&~inXM[9]&~inXM[8]&~inXM[7]&
 					 ~inXM[6]&~inXM[5]&~inXM[4]&~inXM[3]&~inXM[2]&~inXM[1]&~inXM[0]);
 
-assign xmWritesRD= ~(xm_sw|xm_j|xm_bne|xm_jal|xm_jr|xm_blt|xm_bex|xm_setx|xm_noop);
+assign xmWritesRD= ~(xm_sw|xm_j|xm_bne|xm_jal|xm_jr|xm_blt|xm_noop);
 
 wire dx_sll,dx_srr, usesRT;
 assign dx_sll= (~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&~inDX[27])&(~inDX[6]&~inDX[5]&inDX[4]&~inDX[3]&~inDX[2]);
 assign dx_srr= (~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&~inDX[27])&(~inDX[6]&~inDX[5]&inDX[4]&~inDX[3]&inDX[2]);
-assign usesRT=(~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&~inDX[27])&~dx_sll&~dx_srr;
+assign usesRT=dx_bex|(~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&~inDX[27])&~dx_sll&~dx_srr;
 
 wire [4:0]rtDXCompXM,rtDXCompMW,rsDXCompXM,rsDXCompMW,rdXMCompMW,rsFDComp,rtFDComp,rdDXCompXM,rdDXCompMW;
 

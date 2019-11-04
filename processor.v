@@ -79,6 +79,7 @@ module processor(
 	 debugALUinA,
 	 debugALUinB,
 	 debugStall
+	  
 );
 
 //debug
@@ -141,9 +142,12 @@ output debugStall;
 
 	wire dx_isJR,dx_isBLT,dx_isBNE,dx_BEX,branchOverwrite;
 	wire[31:0]dx_jrAmt,dx_regBOut;
-	dxDecoder dx_decoder(.pc(dxPCOut),.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmO),.mwOVR(data_writeReg),
+	dxDecoder dx_decoder(.pc(dxPCOut),.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmOvr),.mwOVR(data_writeReg),
 	 .outA(xA),.outB(xB),.aluOp(aluOp),.shamt(aluShamt),.isMult(isMult),.isDiv(isDiv),
 	 .isJR(dx_isJR),.isBLT(dx_isBLT),.isBNE(dx_isBNE),.jrAmt(dx_jrAmt),.regBOut(dx_regBOut),.isBEX(dx_BEX));
+	 
+	 wire [31:0]xmOvr;
+	 assign xmOvr = xm_setX ?data_xmSetX :xmO;
 	 
 
 
@@ -171,6 +175,12 @@ output debugStall;
 	 multdivLatch multDivLatch(.in(dxIR),.we(isMult|isDiv),.clock(clockinv),.out(multInstruction),.reset(reset),.done(multReady|multException),.inProgress(multInProgress));
 	 
 	 x_pipe_reg xm_latch (.dataA(aluOut),.dataB(dx_regBOut),.we(xmWE), .clk(clock),.reset(reset),.data_outA(xmO),.data_outB(xmB),.instruction_in(x_latch_instruciton_in),.instruction_out(xmIR),.ovf_in(aluOvf),.ovf_out(xm_ovf)); 
+	 
+	 wire xm_setX;
+	 wire[31:0]data_xmSetX;
+	 assign xm_setX=xmIR[31]&~xmIR[30]&xmIR[29]&~xmIR[28]&xmIR[27];
+	 assign data_xmSetX[31:27]={5{1'b0}};
+	 assign data_xmSetX[26:0]=xmIR[26:0];
 	 
 	 xmDecoder xm_decoder(.instruction(xmIR),.we(wren));
 	 assign address_dmem=xmO[11:0];
@@ -209,7 +219,13 @@ output debugStall;
 	 /*HAZARD CONTROLLS*/
 	 wire fdWE,dxWE,xmWE,mwWE,pcWE;
 	 
-	 rwHazardController rwHazController(.inFD(fdIR),.inDX(dxIR),.inXM(xmIR),.inMW(mwIR),.xmOverwriteDXRS(overwriteDXRS[0]),.xmOverwriteDXRT(overwriteDXRT[0]),.mwOverwriteDXRS(overwriteDXRS[1]),.mwOverwriteDXRT(overwriteDXRT[1]),.overWriteXMRD(overWriteXMRD),.overWriteRegA(overwriteFDRS),.overWriteRegB(overwriteFDRT));
+	 rwHazardController rwHazController(.inFD(fdIR),.inDX(dxIR),.inXM(xmIR),.inMW(mwIR),.xmOverwriteDXRS(overwriteDXRS[0]),
+	 .xmOverwriteDXRT(overwriteDXRT[0]),.mwOverwriteDXRS(overwriteDXRS[1]),.mwOverwriteDXRT(overwriteDXRT[1]),
+	 .overWriteXMRD(overWriteXMRD),.overWriteRegA(overwriteFDRS),.overWriteRegB(overwriteFDRT),.ovfXM(xm_ovf),.ovfMW(mw_ovf));
+	 
+	 
+	 
+	 
 	 stallController stallControl(.in1(fdIR),.in2(dxIR),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall));
 	 
 	 
@@ -243,6 +259,6 @@ output debugStall;
 	 assign debugMW=mwIR;
 	 assign debugALUinA=pcIn;
 	 assign debugALUinB=pcOut;
-	 assign debugStall=isMult;
+	 assign debugStall=overwriteDXRT[0];
 	 
 endmodule

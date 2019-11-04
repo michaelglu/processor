@@ -4,7 +4,7 @@ module regfile (
     ctrl_reset, ctrl_writeReg,
     ctrl_readRegA, ctrl_readRegB, data_writeReg,
     data_readRegA, data_readRegB,
-	 debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31
+	 debugR1,debugR2,/*debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,*/debugR30,debugR31
 );
 
    input clock, ctrl_writeEnable, ctrl_reset;
@@ -14,7 +14,7 @@ module regfile (
 	assign clockInv=~clock;
    output [31:0] data_readRegA, data_readRegB;
 	
-	output[31:0]debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31;
+	output[31:0]debugR1,debugR2/*,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29*/,debugR30,debugR31;
 
    /* YOUR CODE HERE */
 	wire[31:0] zero,wr,we,rA,rB,r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16,r17,r18,r19,r20,r21,r22,r23,r24,r25,r26,r27,r28,r29,r30,r31;
@@ -191,7 +191,7 @@ module regfile (
 	
 assign debugR1=r1;
 assign debugR2=r2;
-assign debugR3=r3;
+/*assign debugR3=r3;
 assign debugR4=r4;
 assign debugR5=r5;
 assign debugR6=r6;
@@ -217,7 +217,7 @@ assign debugR25=r25;
 assign debugR26=r26;
 assign debugR27=r27;
 assign debugR28=r28;
-assign debugR29=r29;
+assign debugR29=r29;*/
 assign debugR30=r30;
 assign debugR31=r31;
 	

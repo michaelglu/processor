@@ -23,11 +23,39 @@ assign dx_jr=(~in1[31]&~in1[30]&in1[29]&~in1[28]&~in1[27]);
 assign usesRD= (dx_sw|dx_bne|dx_jr|dx_blt);
 
 
-wire rsMatch, rtMatch, rsMultMatch, rtMultMatch;
-wire [4:0]rsBitMatch,rtBitMatch,rs,rt, rsMBitMatch,rtMBitMatch;
+
+
+
+wire in1_sw,in1_j,in1_bne,in1_jal,in1_jr,in1_blt,in1_bex,in1_setx,in1_noop;
+assign in1_sw=(~in1[31]&~in1[30]&in1[29]&in1[28]&in1[27]);
+assign in1_j=(~in1[31]&~in1[30]&~in1[29]&~in1[28]&in1[27]);
+assign in1_bne=(~in1[31]&~in1[30]&~in1[29]&in1[28]&~in1[27]);
+assign in1_jal=(~in1[31]&~in1[30]&~in1[29]&in1[28]&in1[27]);
+assign in1_jr=(~in1[31]&~in1[30]&in1[29]&~in1[28]&~in1[27]);
+assign in1_blt=(~in1[31]&~in1[30]&in1[29]&in1[28]&~in1[27]);
+assign in1_bex=(in1[31]&~in1[30]&in1[29]&in1[28]&~in1[27]);
+assign in1_setx=(in1[31]&~in1[30]&in1[29]&in1[28]&in1[27]);
+assign in1_noop=(~in1[31]&~in1[30]&~in1[29]&~in1[28]&~in1[27]&
+					 ~in1[26]&~in1[25]&~in1[24]&~in1[23]&~in1[22]&
+					 ~in1[21]&~in1[20]&~in1[19]&~in1[18]&~in1[17]&
+					 ~in1[16]&~in1[15]&~in1[14]&~in1[13]&~in1[12]&
+					 ~in1[11]&~in1[10]&~in1[9]&~in1[8]&~in1[7]&~
+					 in1[6]&~in1[5]&~in1[4]&~in1[3]&~in1[2]&~in1[1]&~in1[0]);
+
+assign in1WritesRD= ~(in1_sw|in1_j|in1_bne|in1_jal|in1_jr|in1_blt|in1_bex|in1_setx|in1_noop);
+
+
+
+
+
+
+
+wire rsMatch, rtMatch, rsMultMatch, rtMultMatch,rdMultMatch;
+wire [4:0]rsBitMatch,rtBitMatch,rs,rt,rd, rsMBitMatch, rdMBitMatch,rtMBitMatch;
 
 assign rs=in1[21:17];
 assign rt= usesRD? in1[26:22] :in1[16:12];
+assign rd= in1[26:22];
 
 xnor(rsBitMatch[0],rs[0],in2[22]);
 xnor(rsBitMatch[1],rs[1],in2[23]);
@@ -51,6 +79,13 @@ xnor(rsMBitMatch[3],rs[3],inM[25]);
 xnor(rsMBitMatch[4],rs[4],inM[26]);
 and(rsMultMatch,rsMBitMatch[0],rsMBitMatch[1],rsMBitMatch[2],rsMBitMatch[3],rsMBitMatch[4]);
 
+xnor(rdMBitMatch[0],rd[0],inM[22]);
+xnor(rdMBitMatch[1],rd[1],inM[23]);
+xnor(rdMBitMatch[2],rd[2],inM[24]);
+xnor(rdMBitMatch[3],rd[3],inM[25]);
+xnor(rdMBitMatch[4],rd[4],inM[26]);
+and(rdMultMatch,rdMBitMatch[0],rdMBitMatch[1],rdMBitMatch[2],rdMBitMatch[3],rdMBitMatch[4]);
+
 xnor(rtMBitMatch[0],rt[0],inM[22]);
 xnor(rtMBitMatch[1],rt[1],inM[23]);
 xnor(rtMBitMatch[2],rt[2],inM[24]);
@@ -62,7 +97,7 @@ and(rtMultMatch,rtMBitMatch[0],rtMBitMatch[1],rtMBitMatch[2],rtMBitMatch[3],rtMB
 
 wire match, multMatch;
 assign match = (rsMatch|(rtMatch&(usesRD|usesRT)));
-assign multMatch = (rsMultMatch|(rtMultMatch&(usesRD|usesRT)));
+assign multMatch = (rsMultMatch|(rtMultMatch&(usesRD|usesRT))|(in1WritesRD&rdMultMatch));
 
 assign stall= (isLW & match)|(multOngoing&multMatch)|(multOngoing&(isMult1));
 //assign debugMultMatch=multMatch;
