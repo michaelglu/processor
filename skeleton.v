@@ -9,7 +9,7 @@
  * inspect which signals the processor tries to assert when.
  */
 
-module skeleton(clock, reset,debugR1,debugR2,/*debugR3`,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,*/debugR30,debugR31,
+module skeleton(clock, reset/*,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31,
 debugFD,
 	debugDX,
 	 debugXM,
@@ -17,21 +17,21 @@ debugFD,
 	 debugImem,
 	 debugImemAddr,
 	  debugALUinA,
-	 debugALUinB,debugStall
+	 debugALUinB,debugStall*/
 	 );
     input clock, reset;
 	 
 	 
 	 
 	 /**DEBUG**/
-	 output[31:0]debugR1,debugR2/*,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29*/,debugR30,debugR31;
+	/* output[31:0]debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31;
 	output[31:0]debugFD,debugDX,debugXM,debugMW, debugALUinA,debugALUinB;
 	 output [11:0]debugImemAddr;
 	 output[31:0]debugImem;
 	 output debugStall;
 	 
 	 assign debugImem=q_dmem;
-	 assign debugImemAddr=address_dmem;
+	 assign debugImemAddr=address_dmem;*/
 
     /** IMEM **/
     // Figure out how to generate a Quartus syncram component and commit the generated verilog file.
@@ -75,7 +75,7 @@ debugFD,
         data_writeReg,
         data_readRegA,
         data_readRegB,
-		  debugR1,debugR2/*,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29*/,debugR30,debugR31
+		  /*debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31*/
     );
 
     /** PROCESSOR **/
@@ -102,10 +102,10 @@ debugFD,
         data_writeReg,                  // O: Data to write to for regfile
         data_readRegA,                  // I: Data from port A of regfile
         data_readRegB,                   // I: Data from port B of regfile
-	 	  debugFD,
+	 	 /* debugFD,
 	debugDX,
 	 debugXM,
-	 debugMW,debugALUinA,debugALUinB,debugStall
+	 debugMW,debugALUinA,debugALUinB,debugStall*/
     );
 
 endmodule

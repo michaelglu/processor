@@ -25,7 +25,7 @@ assign r30[0]=1'b0;
 
 assign data_normal= isLW ?d :o;
 assign data_normal_setx = isSetX ? dataSetX : data_normal;
-assign writeReg_normal=isJal? r30 :instruction[26:22];
+assign writeReg_normal=isJal? {5{1'b1}} :instruction[26:22];
 
 assign one[31:1]={31{1'b0}};
 assign one[0]=1'b1;
@@ -41,8 +41,10 @@ assign eB= (~instruction[31]&~instruction[30]&~instruction[29]&~instruction[28]&
 
 
 
+
+
 assign data = ovf ? eB : data_normal_setx;
-assign writeReg = (ovf|isSetX) ? {5{1'b1}} :writeReg_normal;
+assign writeReg = (ovf|isSetX) ? r30 :writeReg_normal;
 
 assign isR=~instruction[31]&& ~instruction[30]&& ~instruction[29]&& ~instruction[28]&& ~instruction[27];
 assign we=isR|isJal| (~instruction[31]&& ~instruction[30]&& instruction[29]&& ~instruction[28]&& instruction[27])|isLW|ovf|isSetX;

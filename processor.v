@@ -72,20 +72,20 @@ module processor(
     data_readRegB   ,                // I: Data from port B of regfile
 	 
 	 //debug
-	 debugFD,
+	/* debugFD,
 	 debugDX,
 	 debugXM,
 	 debugMW,
 	 debugALUinA,
 	 debugALUinB,
-	 debugStall
+	 debugStall*/
 	  
 );
 
 //debug
-
+/*
 output[31:0] debugFD,debugDX,debugXM,debugMW,debugALUinA,debugALUinB;
-output debugStall;
+output debugStall;*/
 
     // Control signals
     input clock, reset;
@@ -201,7 +201,11 @@ output debugStall;
 	 assign five[1]=1'b0;
 	 assign five[0]=1'b1;
 	 
-	 assign multReg = multException ? {5{1'b1}} : multInstruction[26:22] ;
+	 wire [4:0]r30;
+	 assign r30[4:1]={4{1'b1}};
+	 assign r30[0]=1'b0;
+	 
+	 assign multReg = multException ? r30 : multInstruction[26:22] ;
 	 
 	 wire mwRegWE,mw_ovf;
 	 wire isDivOp;
@@ -253,12 +257,12 @@ output debugStall;
 	 assign mwWE=~exception & ~multException&~multReady;
 	 
 	 /*DEGUG*/
-	 assign debugFD=fdIR;
+	/* assign debugFD=fdIR;
 	 assign debugDX=dxIR;
 	 assign debugXM=xmIR;
 	 assign debugMW=mwIR;
 	 assign debugALUinA=pcIn;
 	 assign debugALUinB=pcOut;
-	 assign debugStall=overwriteDXRT[0];
+	 assign debugStall=overwriteDXRT[0];*/
 	 
 endmodule

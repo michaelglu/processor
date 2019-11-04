@@ -37,11 +37,11 @@ assign r30[4:1]={4{1'b1}};
 assign r30[0]=1'b0;
 
 
-assign rdXM_NoOVF= isXMJal ? r30 : inXM[26:22];
-assign rdMW_NoOVF= isMWJal ? r30 : inMW[26:22];
+assign rdXM_NoOVF= isXMJal ? {5{1'b1}} : inXM[26:22];
+assign rdMW_NoOVF= isMWJal ? {5{1'b1}} : inMW[26:22];
 
-assign rdXM=(ovfXM|isXMSetX) ? {5{1'b1}} : rdXM_NoOVF;
-assign rdMW = (ovfMW|isMWSetX) ? {5{1'b1}}:rdMW_NoOVF;
+assign rdXM=(ovfXM|isXMSetX) ? r30 : rdXM_NoOVF;
+assign rdMW = (ovfMW|isMWSetX) ? r30:rdMW_NoOVF;
 
 
 assign rsDX=inDX[21:17];
