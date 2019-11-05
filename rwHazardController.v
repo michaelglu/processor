@@ -80,7 +80,7 @@ assign mw_noop=(~inMW[31]&~inMW[30]&~inMW[29]&~inMW[28]&~inMW[27]&
 					 ~inMW[11]&~inMW[10]&~inMW[9]&~inMW[8]&~inMW[7]&~
 					 inMW[6]&~inMW[5]&~inMW[4]&~inMW[3]&~inMW[2]&~inMW[1]&~inMW[0]);
 
-assign mwWritesRD= ~(mw_sw|mw_j|mw_bne|mw_jal|mw_jr|mw_blt|mw_bex|mw_noop);
+assign mwWritesRD= (~(mw_sw|mw_j|mw_bne|mw_jal|mw_jr|mw_blt|mw_bex|mw_noop)) & (inMW[26]|inMW[25]|inMW[24]|inMW[23]|inMW[22]);
 
 wire xm_sw,xm_j,xm_bne,xm_jal,xm_jr,xm_blt,xm_bex,xm_setx,xm_noop;
 assign xm_sw=(~inXM[31]&~inXM[30]&inXM[29]&inXM[28]&inXM[27]);
@@ -98,7 +98,7 @@ assign xm_noop=(~inXM[31]&~inXM[30]&~inXM[29]&~inXM[28]&~inXM[27]&
 					 ~inXM[11]&~inXM[10]&~inXM[9]&~inXM[8]&~inXM[7]&
 					 ~inXM[6]&~inXM[5]&~inXM[4]&~inXM[3]&~inXM[2]&~inXM[1]&~inXM[0]);
 
-assign xmWritesRD= ~(xm_sw|xm_j|xm_bne|xm_jal|xm_jr|xm_blt|xm_noop);
+assign xmWritesRD= (~(xm_sw|xm_j|xm_bne|xm_jal|xm_jr|xm_blt|xm_noop))&(inXM[26]|inXM[25]|inXM[24]|inXM[23]|inXM[22]);
 
 wire dx_sll,dx_srr, usesRT;
 assign dx_sll= (~inDX[31]&~inDX[30]&~inDX[29]&~inDX[28]&~inDX[27])&(~inDX[6]&~inDX[5]&inDX[4]&~inDX[3]&~inDX[2]);

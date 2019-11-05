@@ -4,7 +4,7 @@ module regfile (
     ctrl_reset, ctrl_writeReg,
     ctrl_readRegA, ctrl_readRegB, data_writeReg,
     data_readRegA, data_readRegB,
-	 /*debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31*/
+	/* debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31*/
 );
 
    input clock, ctrl_writeEnable, ctrl_reset;
@@ -188,8 +188,8 @@ module regfile (
 	tri_state_32 tb31 (.in(r31), .oe(rB[31]), .out(data_readRegB));
 	
 	
-	
-/*assign debugR1=r1;
+/*	
+assign debugR1=r1;
 assign debugR2=r2;
 assign debugR3=r3;
 assign debugR4=r4;
@@ -219,8 +219,8 @@ assign debugR27=r27;
 assign debugR28=r28;
 assign debugR29=r29;
 assign debugR30=r30;
-assign debugR31=r31;*/
-	
+assign debugR31=r31;
+	*/
 //	mux_32 ma(.select(ctrl_readRegA), .in0(r0), .in1(r1), .in2(r2), .in3(r3),.in4(r4),.in5(r5),.in6(r6),.in7(r7),.in8(r8),.in9(r9),.in10(r10),.in11(r11),.in12(r12),.in13(r13),.in14(r14),.in15(r15),.in16(r16),.in17(r17),.in18(r18),.in19(r19),.in20(r20),.in21(r21),.in22(r22),.in23(r23),.in24(r24),.in25(r25),.in26(r26),.in27(r27),.in28(r28),.in29(r29),.in30(r30),.in31(r31),.out(data_readRegA));
 //	mux_32 mb(.select(ctrl_readRegB), .in0(r0), .in1(r1), .in2(r2), .in3(r3),.in4(r4),.in5(r5),.in6(r6),.in7(r7),.in8(r8),.in9(r9),.in10(r10),.in11(r11),.in12(r12),.in13(r13),.in14(r14),.in15(r15),.in16(r16),.in17(r17),.in18(r18),.in19(r19),.in20(r20),.in21(r21),.in22(r22),.in23(r23),.in24(r24),.in25(r25),.in26(r26),.in27(r27),.in28(r28),.in29(r29),.in30(r30),.in31(r31),.out(data_readRegB));
 
