@@ -10,7 +10,7 @@ assign isMult1 = (~in1[31]&~in1[30]&~in1[29]&~in1[28]&~in1[27])&(~in1[6]&~in1[5]
 
 
 
-wire dx_sll,dx_srr,dx_sw,dx_bne,dx_jr,dx_blt, usesRT,usesRD;
+wire dx_sll,dx_srr,dx_sw,dx_bne,dx_jr,dx_blt, usesRT,usesRD,isJal;
 assign dx_sll= (~in1[31]&~in1[30]&~in1[29]&~in1[28]&~in1[27])&(~in1[6]&~in1[5]&in1[4]&~in1[3]&~in1[2]);
 assign dx_srr= (~in1[31]&~in1[30]&~in1[29]&~in1[28]&~in1[27])&(~in1[6]&~in1[5]&in1[4]&~in1[3]&in1[2]);
 assign usesRT=(~in1[31]&~in1[30]&~in1[29]&~in1[28]&~in1[27])&~dx_sll&~dx_srr;
@@ -19,6 +19,8 @@ assign dx_sw=(~in1[31]&~in1[30]&in1[29]&in1[28]&in1[27]);
 assign dx_bne=(~in1[31]&~in1[30]&~in1[29]&in1[28]&~in1[27]);
 assign dx_blt=(~in1[31]&~in1[30]&in1[29]&in1[28]&~in1[27]);
 assign dx_jr=(~in1[31]&~in1[30]&in1[29]&~in1[28]&~in1[27]);
+
+assign isJal =(~in1[31]&~in1[30]&~in1[29]&in1[28]&in1[27]);
 
 assign usesRD= (dx_sw|dx_bne|dx_jr|dx_blt);
 
@@ -42,7 +44,7 @@ assign in1_noop=(~in1[31]&~in1[30]&~in1[29]&~in1[28]&~in1[27]&
 					 ~in1[11]&~in1[10]&~in1[9]&~in1[8]&~in1[7]&~
 					 in1[6]&~in1[5]&~in1[4]&~in1[3]&~in1[2]&~in1[1]&~in1[0]);
 
-assign in1WritesRD= ~(in1_sw|in1_j|in1_bne|in1_jal|in1_jr|in1_blt|in1_bex|in1_setx|in1_noop);
+assign in1WritesRD= ~(in1_sw|in1_j|in1_bne|in1_jr|in1_blt|in1_bex|in1_setx|in1_noop);
 
 
 
@@ -55,7 +57,7 @@ wire [4:0]rsBitMatch,rtBitMatch,rs,rt,rd, rsMBitMatch, rdMBitMatch,rtMBitMatch;
 
 assign rs=in1[21:17];
 assign rt= usesRD? in1[26:22] :in1[16:12];
-assign rd= in1[26:22];
+assign rd= isJal ?{32{1'b1}} :in1[26:22];
 
 xnor(rsBitMatch[0],rs[0],in2[22]);
 xnor(rsBitMatch[1],rs[1],in2[23]);

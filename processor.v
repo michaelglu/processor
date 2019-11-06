@@ -213,7 +213,7 @@ output debugStall;*/
 	 wire [31:0]multData,multE;
 	 assign isDivOp = multInstruction[2]; 
 	 assign multE= isDivOp ? five : four; 
-	 assign multData = multReady ? multOut : multE;
+	 assign multData = multException ? multE: multOut;
 	 
 	 assign data_writeReg=(multReady|multException) ? multData :mwDataWriteReg;// TODO: RSTATUS WRITE ERROR IF ERROR OCCURRED
 	 assign ctrl_writeReg= multReady? multReg : mwWriteReg;//TODO: RSTATUS
