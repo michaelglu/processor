@@ -136,14 +136,14 @@ output debugStall;*/
 
 
 	 d_pipe_reg dx_latch(.data_inA(dlatch_in_a),.we(dxWE),.data_inB(dlatch_in_b), .clk(clock), .pc_in(fdPCOut),.reset(reset),.data_outA(dxA),.data_outB(dxB)
-	 ,.pc_out(dxPCOut),.instruction_out(dxIR),.instruction_in(dx_inst_in));
+	 ,.pc_out(dxPCOut),.instruction_out(dxIR),.instruction_in(dx_inst_in),.branchPredictedTaken_in(shouldBranchOrJump),.branchPredictedTaken_out(branchPredictedTaken));
 	
 
-	wire dx_isJR,dx_isBLT,dx_isBNE,dx_BEX,branchOverwrite;
+	wire dx_isJR,dx_isBLT,dx_isBNE,dx_BEX,branchOverwrite,branchPredictedTaken;
 	wire[31:0]dx_jrAmt,dx_regBOut;
 	dxDecoder dx_decoder(.pc(dxPCOut),.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmOvr),.mwOVR(data_writeReg),
 	 .outA(xA),.outB(xB),.aluOp(aluOp),.shamt(aluShamt),.isMult(isMult),.isDiv(isDiv),
-	 .isJR(dx_isJR),.isBLT(dx_isBLT),.isBNE(dx_isBNE),.jrAmt(dx_jrAmt),.regBOut(dx_regBOut),.isBEX(dx_BEX));
+	 .isJR(dx_isJR),.isBLT(dx_isBLT),.isBNE(dx_isBNE),.jrAmt(dx_jrAmt),.regBOut(dx_regBOut),.isBEX(dx_BEX),.branchPredictedTaken(branchPredictedTaken));
 	 
 	 wire [31:0]xmOvr;
 	 assign xmOvr = xm_setX ?data_xmSetX :xmO;
@@ -156,9 +156,10 @@ output debugStall;*/
 	 alu myAlu(.data_operandA(xA),.data_operandB(xB),.ctrl_ALUopcode(aluOp),.ctrl_shiftamt(aluShamt),.data_result(aluOut),.isNotEqual(aluNE),.isLessThan(aluLT),.overflow(aluOvf));
 	
 
-	assign branchOverwrite = (dx_isBNE & ~aluNE)|(dx_isBLT & ~aluLT)|(dx_BEX & ~aluNE);
+	assign branchOverwrite = branchPredictedTaken ? ((dx_isBNE & ~aluNE)|(dx_isBLT & ~aluLT)|(dx_BEX & ~aluNE)):((dx_isBNE & aluNE)|(dx_isBLT & aluLT)|(dx_BEX & aluNE));
 	assign dx_decoder_pc_out = dx_jrAmt;
 	assign overWriteDX=branchOverwrite|dx_isJR;
+	assign debugBranchPredictedTaken=branchPredictedTaken;
 
 
 
