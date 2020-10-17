@@ -1,8 +1,8 @@
-module fdDecoder(instruction,readRegA,readRegB,isJB,pcOut,pcIn,instructionOut);
+module fdDecoder(instruction,readRegA,readRegB,isJB,pcOut,pcIn,instructionOut,shouldBranchOrJump);
 
 input[31:0]instruction,pcIn;
 output[4:0]readRegA,readRegB;
-output isJB;
+output isJB,shouldBranchOrJump;
 output[31:0]pcOut,instructionOut;
 
 
@@ -15,6 +15,7 @@ assign isBLT=(~instruction[31]&~instruction[30]&instruction[29]&instruction[28]&
 assign isJump=(~instruction[31]&~instruction[30]&~instruction[29]&~instruction[28]&instruction[27]);
 assign isJal=(~instruction[31]&~instruction[30]&~instruction[29]&instruction[28]&instruction[27]);
 assign isBEX=(instruction[31]&~instruction[30]&instruction[29]&instruction[28]&~instruction[27]);
+
 
 
 assign isSw=~instruction[31]&~instruction[30]&instruction[29]&instruction[28]&instruction[27];
@@ -39,6 +40,12 @@ assign adder1 = (isBNE|isBLT) ? pcIn : {32{1'b0}};
 
 
 adder_cla_32_bit adder (.in1(adder1),.in2(pcWire),.cin(isBNE|isBLT),.sum(pcOut),.overflow(overflow));
-assign instructionOut = (isJump) ? {32{1'b0}} : instruction; 
+assign instructionOut = (isJump) ? {32{1'b0}} : instruction;
+ 
+ 
+//BRANCH PREDICTOR
+wire shouldTakeBranch;
+predictor myPredictor (.shouldTakeBranch(shouldTakeBranch));
+assign shouldBranchOrJump = (isJal|isJump) ? 1'b1 : (isBNE|isBLT|isBEX)&shouldTakeBranch; 
 
 endmodule

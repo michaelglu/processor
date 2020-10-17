@@ -3,3 +3,6 @@
 !.gitignore
 !*.v
 !*.tex
+!*.mif
+!*.s
+!/tests

@@ -114,7 +114,6 @@ output debugStall;*/
 	 wire overWriteFD,overWriteDX,aluNE,aluLT,aluOvf,isMult,isDiv;
 	 wire [4:0]aluOp,aluShamt;
 	 
-//	 assign overWrite=1'b0;//TODO: channge overwrite signal when jump + branch is implemented
 	 
 	 programCounter pc(.clk(clock),.out(pcOut),.overwrite(overWriteFD|overWriteDX),.overwrite_in(pcIn),.reset(reset),.we(pcWE));
 	 assign address_imem=pcOut[11:0];
@@ -125,13 +124,13 @@ output debugStall;*/
 	 
 	 wire [31:0] fdDecoderInput, branchPC;
 	 assign fdDecoderInput = stall ? {32{1'b0}} : fdIR;
-	 wire isJB;
+	 wire isJB,shouldBranchOrJump;
 	
 
 	fdDecoder fd_decoder(.instruction(fdDecoderInput),.readRegA(ctrl_readRegA),.readRegB(ctrl_readRegB), 
-	                     .isJB(isJB),.pcOut(fd_decoder_pc_out),.pcIn(fdPCOut),.instructionOut(fd_instr_out));
+	                     .isJB(isJB),.pcOut(fd_decoder_pc_out),.pcIn(fdPCOut),.instructionOut(fd_instr_out),.shouldBranchOrJump(shouldBranchOrJump));
 								
-	assign overWriteFD=isJB;
+	assign overWriteFD=isJB&shouldBranchOrJump;
 	assign pcIn= overWriteDX ? dx_decoder_pc_out: fd_decoder_pc_out;
 	 assign dx_inst_in= overWriteDX ?{32{1'b0}} :fd_instr_out;
 
