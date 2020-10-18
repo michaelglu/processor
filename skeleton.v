@@ -36,12 +36,17 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
     /** IMEM **/
     // Figure out how to generate a Quartus syncram component and commit the generated verilog file.
     // Make sure you configure it correctly!
-    wire [11:0] address_imem;
-    wire [31:0] q_imem;
-    imem my_imem(
-        .address    (address_imem),            // address of data
+    wire [11:0] address_imem_1,address_imem_2;
+    wire [31:0] q_imem_1,q_imem_2;
+    imem my_imem_1(
+        .address    (address_imem_1),            // address of data
         .clock      (~clock),                  // you may need to invert the clock
-        .q          (q_imem)                   // the raw instruction
+        .q          (q_imem_1)                   // the raw instruction
+    );
+	  imem my_imem_2(
+        .address    (address_imem_2),            // address of data
+        .clock      (~clock),                  // you may need to invert the clock
+        .q          (q_imem_2)                   // the raw instruction
     );
 
     /** DMEM **/
@@ -61,20 +66,29 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 
     /** REGFILE **/
     // Instantiate your regfile
-    wire ctrl_writeEnable;
-    wire [4:0] ctrl_writeReg, ctrl_readRegA, ctrl_readRegB;
-    wire [31:0] data_writeReg;
-    wire [31:0] data_readRegA, data_readRegB;
+    wire ctrl_writeEnable_1,ctrl_writeEnable_2;
+    wire [4:0] ctrl_writeReg_1,ctrl_writeReg_2, ctrl_readRegA_1,ctrl_readRegA_2, ctrl_readRegB_1,ctrl_readRegB_2;
+    wire [31:0] data_writeReg_1,data_writeReg_2;
+    wire [31:0] data_readRegA_1,data_readRegA_2, data_readRegB_1,data_readRegB_2;
     regfile my_regfile(
-        clock,
-        ctrl_writeEnable,
-        reset,
-        ctrl_writeReg,
-        ctrl_readRegA,
-        ctrl_readRegB,
-        data_writeReg,
-        data_readRegA,
-        data_readRegB,
+    clock,
+    ctrl_writeEnable_1,
+	 ctrl_writeEnable_2,
+    reset, 
+	 ctrl_writeReg_1,
+	 ctrl_writeReg_2,
+    ctrl_readRegA_1, 
+	 ctrl_readRegB_1, 
+	 data_writeReg_1,
+    data_readRegA_1, 
+	 data_readRegB_1,
+	 ctrl_readRegA_2, 
+	 ctrl_readRegB_2, 
+	 data_writeReg_2,
+    data_readRegA_2, 
+	 data_readRegB_2,
+	 
+	 
 		  debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31
     );
 
@@ -85,8 +99,11 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
         reset,                          // I: A reset signal
 
         // Imem
-        address_imem,                   // O: The address of the data to get from imem
-        q_imem,                         // I: The data from imem
+        address_imem_1,                   // O: The address of the data to get from imem
+        q_imem_1,                         // I: The data from imem
+		  address_imem_2,                   // O: The address of the data to get from imem
+        q_imem_2,                         // I: The data from imem
+
 
         // Dmem
         address_dmem,                   // O: The address of the data to get or put from/to dmem
@@ -95,13 +112,21 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
         q_dmem,                         // I: The data from dmem
 
         // Regfile
-        ctrl_writeEnable,               // O: Write enable for regfile
-        ctrl_writeReg,                  // O: Register to write to in regfile
-        ctrl_readRegA,                  // O: Register to read from port A of regfile
-        ctrl_readRegB,                  // O: Register to read from port B of regfile
-        data_writeReg,                  // O: Data to write to for regfile
-        data_readRegA,                  // I: Data from port A of regfile
-        data_readRegB,                   // I: Data from port B of regfile
+        ctrl_writeEnable_1,               // O: Write enable for regfile
+        ctrl_writeReg_1,                  // O: Register to write to in regfile
+        ctrl_readRegA_1,                  // O: Register to read from port A of regfile
+        ctrl_readRegB_1,                  // O: Register to read from port B of regfile
+        data_writeReg_1,                  // O: Data to write to for regfile
+        data_readRegA_1,                  // I: Data from port A of regfile
+        data_readRegB_1,                   // I: Data from port B of regfile
+		  
+		  ctrl_writeEnable_2,               // O: Write enable for regfile
+        ctrl_writeReg_2,                  // O: Register to write to in regfile
+        ctrl_readRegA_2,                  // O: Register to read from port A of regfile
+        ctrl_readRegB_2,                  // O: Register to read from port B of regfile
+        data_writeReg_2,                  // O: Data to write to for regfile
+        data_readRegA_2,                  // I: Data from port A of regfile
+        data_readRegB_2,                   // I: Data from port B of regfile
 	 	 /* debugFD,
 	debugDX,
 	 debugXM,
