@@ -63,13 +63,21 @@ module processor(
     q_dmem,                         // I: The data from dmem
 
     // Regfile
-    ctrl_writeEnable,               // O: Write enable for regfile
-    ctrl_writeReg,                  // O: Register to write to in regfile
-    ctrl_readRegA,                  // O: Register to read from port A of regfile
-    ctrl_readRegB,                  // O: Register to read from port B of regfile
-    data_writeReg,                  // O: Data to write to for regfile
-    data_readRegA,                  // I: Data from port A of regfile
-    data_readRegB   ,                // I: Data from port B of regfile
+    ctrl_writeEnable_1,               // O: Write enable for regfile
+    ctrl_writeReg_1,                  // O: Register to write to in regfile
+    ctrl_readRegA_1,                  // O: Register to read from port A of regfile
+    ctrl_readRegB_1,                  // O: Register to read from port B of regfile
+    data_writeReg_1,                  // O: Data to write to for regfile
+    data_readRegA_1,                  // I: Data from port A of regfile
+    data_readRegB_1   ,                // I: Data from port B of regfile
+	 
+	 ctrl_writeEnable_2,               // O: Write enable for regfile
+    ctrl_writeReg_2,                  // O: Register to write to in regfile
+    ctrl_readRegA_2,                  // O: Register to read from port A of regfile
+    ctrl_readRegB_2,                  // O: Register to read from port B of regfile
+    data_writeReg_2,                  // O: Data to write to for regfile
+    data_readRegA_2,                  // I: Data from port A of regfile
+    data_readRegB_2   ,                // I: Data from port B of regfile
 	 
 	 //debug
 	/* debugFD,
@@ -101,10 +109,10 @@ output debugStall;*/
     input [31:0] q_dmem;
 
     // Regfile
-    output ctrl_writeEnable;
-    output [4:0] ctrl_writeReg, ctrl_readRegA, ctrl_readRegB;
-    output [31:0] data_writeReg;
-    input [31:0] data_readRegA, data_readRegB;
+    output ctrl_writeEnable_1,ctrl_writeEnable_2;
+    output [4:0] ctrl_writeReg_1, ctrl_readRegA_1, ctrl_readRegB_1,ctrl_writeReg_2, ctrl_readRegA_2, ctrl_readRegB_2;
+    output [31:0] data_writeReg_1,data_writeReg_2;
+    input [31:0] data_readRegA_1,data_readRegA_2, data_readRegB_1,data_readRegB_2;
 
     /* YOUR CODE STARTS HERE */
 	 
@@ -127,7 +135,7 @@ output debugStall;*/
 	 wire isJB,shouldBranchOrJump;
 	
 
-	fdDecoder fd_decoder(.instruction(fdDecoderInput),.readRegA(ctrl_readRegA),.readRegB(ctrl_readRegB), 
+	fdDecoder fd_decoder(.instruction(fdDecoderInput),.readRegA(ctrl_readRegA_1),.readRegB(ctrl_readRegB_1), 
 	                     .isJB(isJB),.pcOut(fd_decoder_pc_out),.pcIn(fdPCOut),.instructionOut(fd_instr_out),.shouldBranchOrJump(shouldBranchOrJump));
 								
 	assign overWriteFD=isJB&shouldBranchOrJump;
@@ -141,7 +149,7 @@ output debugStall;*/
 
 	wire dx_isJR,dx_isBLT,dx_isBNE,dx_BEX,branchOverwrite,branchPredictedTaken;
 	wire[31:0]dx_jrAmt,dx_regBOut;
-	dxDecoder dx_decoder(.pc(dxPCOut),.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmOvr),.mwOVR(data_writeReg),
+	dxDecoder dx_decoder(.pc(dxPCOut),.instruction(dxIR), .regA(dxA),.regB(dxB),.overWriteRS(overwriteDXRS),.overWriteRT(overwriteDXRT),.xmOVR(xmOvr),.mwOVR(data_writeReg_1),
 	 .outA(xA),.outB(xB),.aluOp(aluOp),.shamt(aluShamt),.isMult(isMult),.isDiv(isDiv),
 	 .isJR(dx_isJR),.isBLT(dx_isBLT),.isBNE(dx_isBNE),.jrAmt(dx_jrAmt),.regBOut(dx_regBOut),.isBEX(dx_BEX),.branchPredictedTaken(branchPredictedTaken));
 	 
@@ -215,9 +223,9 @@ output debugStall;*/
 	 assign multE= isDivOp ? five : four; 
 	 assign multData = multException ? multE: multOut;
 	 
-	 assign data_writeReg=(multReady|multException) ? multData :mwDataWriteReg;// TODO: RSTATUS WRITE ERROR IF ERROR OCCURRED
-	 assign ctrl_writeReg= multReady? multReg : mwWriteReg;//TODO: RSTATUS
-	 assign ctrl_writeEnable = multReady|multException|mwRegWE;//TODO RSTATUS
+	 assign data_writeReg_1=(multReady|multException) ? multData :mwDataWriteReg;// TODO: RSTATUS WRITE ERROR IF ERROR OCCURRED
+	 assign ctrl_writeReg_1= multReady? multReg : mwWriteReg;//TODO: RSTATUS
+	 assign ctrl_writeEnable_1 = multReady|multException|mwRegWE;//TODO RSTATUS
 	 
 	 
 	 /*HAZARD CONTROLLS*/
@@ -242,8 +250,8 @@ output debugStall;*/
 	 
 	 assign stallInv=~stall;
 	 
-	 assign dlatch_in_a =  data_readRegA;
-	 assign dlatch_in_b =  data_readRegB;
+	 assign dlatch_in_a =  data_readRegA_1;
+	 assign dlatch_in_b =  data_readRegB_1;
 	 /*EXCEPTION HANDLING*/
 	 wire exception;
 	 wire[31:0]exceptionVal;
