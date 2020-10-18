@@ -53,8 +53,10 @@ module processor(
     reset,                          // I: A reset signal
 
     // Imem
-    address_imem,                   // O: The address of the data to get from imem
-    q_imem,                         // I: The data from imem
+    address_imem_1,                   // O: The address of the data to get from imem
+    q_imem_1,                         // I: The data from imem
+	 address_imem_2,                   // O: The address of the data to get from imem
+    q_imem_2,                         // I: The data from imem
 
     // Dmem
     address_dmem,                   // O: The address of the data to get or put from/to dmem
@@ -99,8 +101,8 @@ output debugStall;*/
     input clock, reset;
 
     // Imem
-    output [11:0] address_imem;
-    input [31:0] q_imem;
+    output [11:0] address_imem_1,address_imem_2;
+    input [31:0] q_imem_1,q_imem_2;
 
     // Dmem
     output [11:0] address_dmem;
@@ -124,10 +126,10 @@ output debugStall;*/
 	 
 	 
 	 programCounter pc(.clk(clock),.out(pcOut),.overwrite(overWriteFD|overWriteDX),.overwrite_in(pcIn),.reset(reset),.we(pcWE));
-	 assign address_imem=pcOut[11:0];
+	 assign address_imem_1=pcOut[11:0];
 	 
 	 wire [31:0]fd_instr_in,fd_decoder_pc_out,fd_instr_out,dx_decoder_pc_out,dx_inst_in;
-	 assign fd_instr_in= (overWriteFD|overWriteDX) ?{32{1'b0}} : q_imem;
+	 assign fd_instr_in= (overWriteFD|overWriteDX) ?{32{1'b0}} : q_imem_1;
 	 f_pipe_reg fd_latch (.data_in(fd_instr_in),.we(fdWE), .clk(clock), .pc_in(pcOut),.reset(reset), .pc_out(fdPCOut),.instruction_out(fdIR));
 	 
 	 wire [31:0] fdDecoderInput, branchPC;

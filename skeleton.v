@@ -101,6 +101,9 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
         // Imem
         address_imem_1,                   // O: The address of the data to get from imem
         q_imem_1,                         // I: The data from imem
+		  address_imem_2,                   // O: The address of the data to get from imem
+        q_imem_2,                         // I: The data from imem
+
 
         // Dmem
         address_dmem,                   // O: The address of the data to get or put from/to dmem
