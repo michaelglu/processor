@@ -36,12 +36,17 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
     /** IMEM **/
     // Figure out how to generate a Quartus syncram component and commit the generated verilog file.
     // Make sure you configure it correctly!
-    wire [11:0] address_imem;
-    wire [31:0] q_imem;
-    imem my_imem(
-        .address    (address_imem),            // address of data
+    wire [11:0] address_imem_1,address_imem_2;
+    wire [31:0] q_imem_1,q_imem_2;
+    imem my_imem_1(
+        .address    (address_imem_1),            // address of data
         .clock      (~clock),                  // you may need to invert the clock
-        .q          (q_imem)                   // the raw instruction
+        .q          (q_imem_1)                   // the raw instruction
+    );
+	  imem my_imem_2(
+        .address    (address_imem_2),            // address of data
+        .clock      (~clock),                  // you may need to invert the clock
+        .q          (q_imem_2)                   // the raw instruction
     );
 
     /** DMEM **/
@@ -85,8 +90,8 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
         reset,                          // I: A reset signal
 
         // Imem
-        address_imem,                   // O: The address of the data to get from imem
-        q_imem,                         // I: The data from imem
+        address_imem_1,                   // O: The address of the data to get from imem
+        q_imem_1,                         // I: The data from imem
 
         // Dmem
         address_dmem,                   // O: The address of the data to get or put from/to dmem
