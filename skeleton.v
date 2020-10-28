@@ -10,6 +10,7 @@
  */
 
 module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31,
+debugDX_top,debugDX_bot,
 /*debugFD,
 	debugDX,
 	 debugXM,
@@ -18,6 +19,7 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 	 debugImemAddr,
 	  debugALUinA,
 	 debugALUinB,debugStall*/
+	 debugImemAddr1,debugImemAddr2,debugImem1,debugImem2, debugRegA1,debugRegA2,debugRegB1,debugRegB2
 	 );
     input clock, reset;
 	 
@@ -25,13 +27,17 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 	 
 	 /**DEBUG**/
 	output[31:0]debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31;
-	/*output[31:0]debugFD,debugDX,debugXM,debugMW, debugALUinA,debugALUinB;
-	 output [11:0]debugImemAddr;
-	 output[31:0]debugImem;
-	 output debugStall;
+	/*output[31:0]debugFD,debugDX,debugXM,debugMW, debugALUinA,debugALUinB;*/
+	 output [11:0]debugImemAddr1,debugImemAddr2;
+	 output[31:0]debugImem1,debugImem2;
+	 output[31:0] debugDX_top,debugDX_bot;
+	 output[4:0] debugRegA1,debugRegA2,debugRegB1,debugRegB2;
+//	 output debugStall;
 	 
-	 assign debugImem=q_dmem;
-	 assign debugImemAddr=address_dmem;*/
+	 assign debugImem1=q_imem_1;
+	 assign debugImemAddr1=address_imem_1;
+	 assign debugImem2=q_imem_2;
+	 assign debugImemAddr2=address_imem_2;
 
     /** IMEM **/
     // Figure out how to generate a Quartus syncram component and commit the generated verilog file.
@@ -91,6 +97,11 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 	 
 		  debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31
     );
+	 assign debugRegA1=ctrl_readRegA_1;
+	 assign debugRegA2=ctrl_readRegA_2;
+	 assign debugRegB1=ctrl_readRegB_1;
+	 assign debugRegB2=ctrl_readRegB_2;
+	 
 
     /** PROCESSOR **/
     processor my_processor(
@@ -127,10 +138,9 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
         data_writeReg_2,                  // O: Data to write to for regfile
         data_readRegA_2,                  // I: Data from port A of regfile
         data_readRegB_2,                   // I: Data from port B of regfile
-	 	 /* debugFD,
-	debugDX,
-	 debugXM,
-	 debugMW,debugALUinA,debugALUinB,debugStall*/
+	 	 //debug
+	debugDX_top,debugDX_bot,
+	 
     );
 
 endmodule

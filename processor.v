@@ -89,6 +89,8 @@ module processor(
 	 debugALUinA,
 	 debugALUinB,
 	 debugStall*/
+	 debugDX_top,
+	 debugDX_bot,
 	  
 );
 
@@ -96,6 +98,7 @@ module processor(
 /*
 output[31:0] debugFD,debugDX,debugXM,debugMW,debugALUinA,debugALUinB;
 output debugStall;*/
+output[31:0] debugDX_top,debugDX_bot;
 
     // Control signals
     input clock, reset;
@@ -120,26 +123,40 @@ output debugStall;*/
 	 
 	 wire clockinv;
 	 not(clockinv,clock);
-	 wire [31:0]pcOut,pcIn,fdPCOut,fdIR,dxA,dxB,dxPCOut,dxIR,xA,xB,aluOut,xmO,xmB,xmIR,mwO,mwD,mwIR;
+	 wire [31:0]pcOut,pcOut_bot,pcIn,fdPCOut,fdPCOut_bot,fdIR,fdIR_bot,dxA,dxB,dxPCOut,dxIR,xA,xB,aluOut,xmO,xmB,xmIR,mwO,mwD,mwIR;
 	 wire overWriteFD,overWriteDX,aluNE,aluLT,aluOvf,isMult,isDiv;
 	 wire [4:0]aluOp,aluShamt;
 	 
+	 wire address_imem2_ovf;
 	 
 	 programCounter pc(.clk(clock),.out(pcOut),.overwrite(overWriteFD|overWriteDX),.overwrite_in(pcIn),.reset(reset),.we(pcWE));
+	 adder_cla_32_bit pc_bot (.in1(pcOut),.in2({32{1'b0}}),.cin({1'b1}),.sum(pcOut_bot),.overflow(address_imem2_ovf));
 	 assign address_imem_1=pcOut[11:0];
+	 assign address_imem_2=pcOut_bot[11:0];
 	 
-	 wire [31:0]fd_instr_in,fd_decoder_pc_out,fd_instr_out,dx_decoder_pc_out,dx_inst_in;
+	 
+	 wire [31:0]fd_instr_in,fd_instr_in_bot,fd_decoder_pc_out,fd_decoder_pc_out_bot,fd_instr_out,fd_instr_out_bot;
+	 wire[31:0] dx_decoder_pc_out,dx_decoder_pc_out_bot,dx_inst_in,dx_inst_in_bot;
 	 assign fd_instr_in= (overWriteFD|overWriteDX) ?{32{1'b0}} : q_imem_1;
-	 f_pipe_reg fd_latch (.data_in(fd_instr_in),.we(fdWE), .clk(clock), .pc_in(pcOut),.reset(reset), .pc_out(fdPCOut),.instruction_out(fdIR));
+	 assign fd_instr_in_bot= (overWriteFD|overWriteDX) ?{32{1'b0}} : q_imem_2;
 	 
-	 wire [31:0] fdDecoderInput, branchPC;
+	 f_pipe_reg fd_latch (.data_in_top(fd_instr_in),.data_in_bot(fd_instr_in_bot),.we(fdWE), .clk(clock), .pc_in_top(pcOut),.pc_in_bot(pcOut_bot),.reset(reset),
+	 .pc_out_top(fdPCOut),.pc_out_bot(fdPCOut_bot),.instruction_out_top(fdIR),.instruction_out_bot(fdIR_bot));
+	 
+	 wire [31:0] fdDecoderInput,fdDecoderInput_bot, branchPC;
 	 assign fdDecoderInput = stall ? {32{1'b0}} : fdIR;
-	 wire isJB,shouldBranchOrJump;
+	 assign fdDecoderInput_bot = stall ? {32{1'b0}} : fdIR_bot;
+	 wire isJB,isJB_bot,shouldBranchOrJump;
 	
 
-	fdDecoder fd_decoder(.instruction(fdDecoderInput),.readRegA(ctrl_readRegA_1),.readRegB(ctrl_readRegB_1), 
-	                     .isJB(isJB),.pcOut(fd_decoder_pc_out),.pcIn(fdPCOut),.instructionOut(fd_instr_out),.shouldBranchOrJump(shouldBranchOrJump));
+	fdDecoder fd_decoder(.instruction_top(fdDecoderInput),.readRegA_top(ctrl_readRegA_1),.readRegB_top(ctrl_readRegB_1), 
+	                     .isJB_top(isJB),.pcOut_top(fd_decoder_pc_out),.pcIn_top(fdPCOut),.instructionOut_top(fd_instr_out),.shouldBranchOrJump(shouldBranchOrJump),
+								.instruction_bot(fdDecoderInput_bot),.readRegA_bot(ctrl_readRegA_2),.readRegB_bot(ctrl_readRegB_2), 
+	                     .isJB_bot(isJB_bot),.pcOut_bot(fd_decoder_pc_out_bot),.pcIn_bot(fdPCOut_bot),.instructionOut_bot(fd_instr_out_bot),
+								);
 								
+	assign debugDX_top=fdDecoderInput;
+	assign debugDX_bot=fdDecoderInput_bot;
 	assign overWriteFD=isJB&shouldBranchOrJump;
 	assign pcIn= overWriteDX ? dx_decoder_pc_out: fd_decoder_pc_out;
 	 assign dx_inst_in= overWriteDX ?{32{1'b0}} :fd_instr_out;
