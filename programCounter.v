@@ -6,9 +6,14 @@ output [31:0] out;
 wire [31:0]regIn,currentCycle,nextCycle,zeroes,regInFinal;
 wire PC_OVF;
 
+wire[31:0]two;
+assign two[31:2]={30{1'b0}};
+assign two[1]={1'b1};
+
+assign two[0]={1'b0};
 assign zeroes={32{1'b0}};
 
-adder_cla_32_bit myAdder(.in1(currentCycle),.in2(zeroes),.cin(1'b1),.sum(nextCycle),.overflow(PC_OVF));
+adder_cla_32_bit myAdder(.in1(currentCycle),.in2(two),.cin(1'b0),.sum(nextCycle),.overflow(PC_OVF));
 assign regIn= overwrite ? overwrite_in : nextCycle;
 assign regInFinal=hasBeenInitialized?regIn:{32{1'b0}};
 
