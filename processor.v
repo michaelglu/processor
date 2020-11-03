@@ -199,8 +199,8 @@ assign d_stall=writing_cross;
 	 
 	 );
 	 
-	 assign d_DX_T=dx_regBOut_bot;
-	 assign d_DX_B=dxB_bot;
+	 assign d_DX_T=xA;
+	 assign d_DX_B=xB;
 	 
 	 wire [31:0]xmOvr,xmOvr_bot;
 	 assign xmOvr = xm_setX ?data_xmSetX :xmO;
@@ -361,9 +361,12 @@ assign d_stall=writing_cross;
 	 stallController stallControl(.in1(fdIR),.in2(dxIR),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_everything_top));
 	 stallController stallControl_bot(.in1(fdIR_bot),.in2(dxIR_bot),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_everything_bot));
 	 
-	 assign stall=stall_everything_top|stall_everything_bot;
+	  stallController stallControl_cross_top(.in1(fdIR),.in2(dxIR_bot),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_cross_1));
+	 stallController stallControl_cross_bot(.in1(fdIR_bot),.in2(dxIR),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_cross_2));
 	 
-	 wire stall_everything_top, stall_everything_bot,stall,stallInv;
+	 assign stall=stall_everything_top|stall_everything_bot|stall_cross_1|stall_cross_2;
+	 
+	 wire stall_everything_top, stall_everything_bot,stall,stallInv,stall_cross_1,stall_cross_2;
 	 wire [1:0] overwriteDXRS,overwriteDXRT,overwriteDXRS_bot,overwriteDXRT_bot;
 	 wire[1:0] cross_overwriteDXRS_top,cross_overwriteDXRT_top,cross_overwriteDXRS_bot,cross_overwriteDXRT_bot;
 	 
