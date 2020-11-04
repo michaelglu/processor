@@ -1,7 +1,10 @@
 module fdDecoder(instruction_top,readRegA_top,readRegB_top,isJB_top,pcOut_top,pcIn_top,instructionOut_top,shouldBranchOrJump,
-					  instruction_bot,readRegA_bot,readRegB_bot,isJB_bot,pcOut_bot,pcIn_bot,instructionOut_bot,stall_bot);
+					  instruction_bot,readRegA_bot,readRegB_bot,isJB_bot,pcOut_bot,pcIn_bot,instructionOut_bot,stall_bot,
+					  predictor_past_pc,predictor_past_wrong
+					  );
 
-input[31:0]instruction_top,instruction_bot,pcIn_top,pcIn_bot;
+input[31:0]instruction_top,instruction_bot,pcIn_top,pcIn_bot,predictor_past_pc;
+input predictor_past_wrong;
 output[4:0]readRegA_top,readRegB_top,readRegA_bot,readRegB_bot;
 output isJB_top,isJB_bot,shouldBranchOrJump;
 output[31:0]pcOut_top,pcOut_bot,instructionOut_top,instructionOut_bot;
@@ -30,7 +33,7 @@ assign isBEX_bot=(instruction_bot[31]&~instruction_bot[30]&instruction_bot[29]&i
 
 
 //stalling
-assign stall_bot = ((isLW_bot|isSw_bot)&(isLW|isSw))|RAW_RS|RAW_RT|((isMult_top|isDiv_top)&(isMult_bot|isDiv_bot));
+assign stall_bot = ((isLW_bot|isSw_bot)&(isLW|isSw))|RAW_RS|RAW_RT|((isMult_top|isDiv_top)&(isMult_bot|isDiv_bot))|((isBranch_top & ~shouldBranchOrJump)&isBranch_bot);
 
 rwHazardController stallControl_corss(.inDX(instruction_bot),.inXM(instruction_top),.xmOverwriteDXRS(RAW_RS),
 	 .xmOverwriteDXRT(RAW_RT),.ovfXM(1'b0),.ovfMW(1'b0));
@@ -97,13 +100,19 @@ adder_cla_32_bit adder (.in1(adder1),.in2(pcWire),.cin(isBNE|isBLT),.sum(pcOut_t
 assign instructionOut_top = (isJump) ? {32{1'b0}} : instruction_top;
 //bot
 adder_cla_32_bit adder_bot (.in1(adder1_bot),.in2(pcWire_bot),.cin(isBNE_bot|isBLT_bot),.sum(pcOut_bot),.overflow(overflow_bot));
-assign instructionOut_bot = (isJump_bot|stall_bot) ? {32{1'b0}} : instruction_bot;
+assign instructionOut_bot = (isJump|isJump_bot|stall_bot) ? {32{1'b0}} : instruction_bot;
  
  
 //BRANCH PREDICTOR
-wire shouldTakeBranch;
-predictor myPredictor (.shouldTakeBranch(shouldTakeBranch));
-assign shouldBranchOrJump = (isJal|isJump) ? 1'b1 : (isBNE|isBLT|isBEX)&shouldTakeBranch; 
+wire shouldTakeBranch,isBranch_top,isBranch_bot;
+wire[31:0] predictorPC;
+
+assign predictorPC= isBranch_top ? pcIn_top : pcIn_bot;
+assign isBranch_top=(isBNE|isBLT|isBEX);
+assign isBranch_bot=(isBNE_bot|isBLT_bot|isBEX_bot);
+
+predictor myPredictor (.pc(predictorPC),.shouldTakeBranch(shouldTakeBranch),.past_pc(predictor_past_pc),.past_wrong(predictor_past_wrong));
+assign shouldBranchOrJump = (isJal|isJump|isJal_bot|isJump_bot) ? 1'b1 : ((isBranch_top|isBranch_bot)&shouldTakeBranch); 
 
 
 

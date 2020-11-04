@@ -178,16 +178,16 @@ assign adder_in2_top= (isBranch_top&branchPredictedTaken) ? {32{1'b0}}:branchTar
 
 adder_cla_32_bit adder_top (.in1(pc_top),.in2(adder_in2_top),.cin((isBranch_top&branchPredictedTaken)),.sum(jumpImmediate_top),.overflow(overflow_top));
 
-assign jrAmt_top= isJR_top ? regB_top :jumpImmediate_top;
+assign jrAmt_top= isJR_top ? regBOut_top :jumpImmediate_top;
 
 //bot
-assign adder_in1_bot= pc_bot;
+assign adder_in1_bot= rt_bot;
 assign adder_in2_bot= (isBranch_bot&branchPredictedTaken) ? {32{1'b0}}:branchTarget_bot;
 
 adder_cla_32_bit adder_bot (.in1(pc_bot),.in2(adder_in2_bot),.cin((isBranch_bot&branchPredictedTaken)),.sum(jumpImmediate_bot),.overflow(overflow_bot));
 
 
-assign jrAmt_bot= isJR_bot ? regB_bot :jumpImmediate_bot;
+assign jrAmt_bot= isJR_bot ? regBOut_bot :jumpImmediate_bot;
 //---------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
