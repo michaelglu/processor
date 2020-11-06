@@ -101,7 +101,7 @@ output[31:0]	 d_FD_T,d_FD_B,d_DX_T,d_DX_B,d_XM_T,d_XM_B,d_MW_T,d_MW_B,d_XM_O,d_X
 output d_stall;
 output[3:0]d_cross_t,d_cross_b;
 
-assign d_stall=overWriteFD|overWriteDX;
+assign d_stall=overWriteDX;
 
     // Control signals
     input clock, reset;
@@ -167,8 +167,8 @@ assign d_stall=overWriteFD|overWriteDX;
 								.predictor_past_pc(predictor_past_pc),.predictor_past_wrong(predictor_past_wrong)
 								);
 								
-	assign d_FD_T=pcIn;
-	assign d_FD_B=xmOvr;
+	assign d_FD_T=fd_instr_out;
+	assign d_FD_B=fd_instr_out_bot;
 	wire [31:0] fd_decoder_PC,predictor_past_pc, branch_overwrite_pc,dx_jrAmt_bot;
 	
 	assign predictor_past_pc= branchOverwrite ? branch_overwrite_pc : {32{1'b1}};
@@ -179,7 +179,7 @@ assign d_stall=overWriteFD|overWriteDX;
 	assign overWriteFD=((isJB|isJB_bot)&shouldBranchOrJump);
 	assign pcIn= overWriteDX ? dx_decoder_pc_out: fd_decoder_PC;
 	 assign dx_inst_in= overWriteDX ?{32{1'b0}} :fd_instr_out;
-	 assign dx_inst_in_bot= (overWriteDX|stall_bot) ?{32{1'b0}} :fd_instr_out_bot;
+	 assign dx_inst_in_bot= (overWriteDX|stall_bot|(shouldBranchOrJump&isJB)) ?{32{1'b0}} :fd_instr_out_bot;
 
 
 	 d_pipe_reg dx_latch(.data_inA_top(dlatch_in_a),.data_inA_bot(dlatch_in_a_bot),.we(dxWE)
@@ -395,8 +395,8 @@ assign d_stall=overWriteFD|overWriteDX;
 	 assign exception={1'b0};
 	 exceptionHandler eHandler (.instruction(dxIR),.setXVal({32{1'b0}}),.out(exceptionVal));
 	 
-	 assign fdWE= ~stall & ~exception & ~multException & ~multReady&~stall_bot;
-	 assign pcWE= ~stall & ~exception & ~multException & ~multReady&~stall_bot;
+	 assign fdWE= ~stall & ~exception & ~multException & ~multReady&(~stall_bot|overWriteDX);
+	 assign pcWE= ~stall & ~exception & ~multException & ~multReady&(~stall_bot|overWriteDX);
 	 assign dxWE= ~exception & ~multException&~multReady;
 	 assign xmWE= ~exception & ~multException&~multReady;
 	 assign mwWE=~exception & ~multException&~multReady;
