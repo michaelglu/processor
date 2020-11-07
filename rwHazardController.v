@@ -1,4 +1,4 @@
-module rwHazardController(inFD,inDX,inXM,inMW,xmOverwriteDXRS,xmOverwriteDXRT,mwOverwriteDXRS,mwOverwriteDXRT,overWriteXMRD,overWriteRegA,overWriteRegB,ovfXM,ovfMW/*,debug_mwWritesRD,debug_xmWritesRD,
+module rwHazardController(inFD,inDX,inXM,inMW,xmOverwriteDXRS,xmOverwriteDXRT,mwOverwriteDXRS,mwOverwriteDXRT,overWriteXMRD,ovfXM,ovfMW/*,debug_mwWritesRD,debug_xmWritesRD,
 debug_rtDXCompXM,debug_rtDXCompMW,debug_rsDXCompXM,debug_rsDXCompMW,debug_rdXMCompMW*/
 );
 
@@ -6,7 +6,7 @@ debug_rtDXCompXM,debug_rtDXCompMW,debug_rsDXCompXM,debug_rsDXCompMW,debug_rdXMCo
 
 input[31:0]inFD,inDX,inXM,inMW;
 input ovfXM,ovfMW;
-output xmOverwriteDXRS,xmOverwriteDXRT,mwOverwriteDXRS,mwOverwriteDXRT,overWriteXMRD,overWriteRegA,overWriteRegB;
+output xmOverwriteDXRS,xmOverwriteDXRT,mwOverwriteDXRS,mwOverwriteDXRT,overWriteXMRD;
 
 //DEBUGS-------------------------
 /*
@@ -24,7 +24,7 @@ assign debug_xmWritesRD=xmWritesRD;
 */
 //---------------------------------------
 wire[4:0] rsFD,rtFD,rdXM,rdMW,rsDX,rsXM,rtDX,rtXM,rdDX,rdXM_NoOVF,rdMW_NoOVF;
-wire mwWritesRD,xmWritesRD,xmUsesRT,dxUsesRT,dxMatchRT_MW,dxMatchRT_XM,dxMatchRD_MW,dxMatchRD_XM,dxMatchRS_MW,dxMatchRS_XM,xmMatchRD,rsFDMatch,rtFDMatch,dxReadsRD;
+wire mwWritesRD,xmWritesRD,xmUsesRT,dxUsesRT,dxMatchRT_MW,dxMatchRT_XM,dxMatchRD_MW,dxMatchRD_XM,dxMatchRS_MW,dxMatchRS_XM,xmMatchRD,dxReadsRD;
 wire isMWJal,isXMJal,isMWSetX,isXMSetX,isDXBEX;
 
 assign isMWJal = ~inMW[31]&~inMW[30]&~inMW[29]&inMW[28]&inMW[27];
@@ -151,17 +151,6 @@ xnor(rdXMCompMW[2],rdXM[2],rdXM[2]);
 xnor(rdXMCompMW[3],rdXM[3],rdXM[3]);
 xnor(rdXMCompMW[4],rdXM[4],rdXM[4]);
 
-xnor(rsFDComp[0],rsFD[0],rdMW[0]);
-xnor(rsFDComp[1],rsFD[1],rdMW[1]);
-xnor(rsFDComp[2],rsFD[2],rdMW[2]);
-xnor(rsFDComp[3],rsFD[3],rdMW[3]);
-xnor(rsFDComp[4],rsFD[4],rdMW[4]);
-
-xnor(rtFDComp[0],rtFD[0],rdMW[0]);
-xnor(rtFDComp[1],rtFD[1],rdMW[1]);
-xnor(rtFDComp[2],rtFD[2],rdMW[2]);
-xnor(rtFDComp[3],rtFD[3],rdMW[3]);
-xnor(rtFDComp[4],rtFD[4],rdMW[4]);
 
 and(dxMatchRD_XM,rdDXCompXM[0],rdDXCompXM[1],rdDXCompXM[2],rdDXCompXM[3],rdDXCompXM[4]);
 and(dxMatchRD_MW,rdDXCompMW[0],rdDXCompMW[1],rdDXCompMW[2],rdDXCompMW[3],rdDXCompMW[4]);
@@ -172,10 +161,10 @@ and(dxMatchRS_XM,rsDXCompXM[0],rsDXCompXM[1],rsDXCompXM[2],rsDXCompXM[3],rsDXCom
 and(dxMatchRS_MW,rsDXCompMW[0],rsDXCompMW[1],rsDXCompMW[2],rsDXCompMW[3],rsDXCompMW[4]);
 and(xmMatchRD,rdXMCompMW[0],rdXMCompMW[1],rdXMCompMW[2],rdXMCompMW[3],rdXMCompMW[4]);
 
-and(rsFDMatch,rsFDComp[0],rsFDComp[1],rsFDComp[2],rsFDComp[3],rsFDComp[4]);
-and(rtFDMatch,rtFDComp[0],rtFDComp[1],rtFDComp[2],rtFDComp[3],rtFDComp[4]);
 
-wire isSW;
+wire isSW,isMWLW;
+assign isLMWW=(~inMW[31]&inMW[30]&~inMW[29]&~inMW[28]&~inMW[27]);
+
 assign isSW=(~inXM[31]&~inXM[30]&inXM[29]&inXM[28]&inXM[27]);
 
 assign overWriteXMRD= isSW & xmMatchRD & mwWritesRD;
@@ -184,8 +173,6 @@ assign xmOverwriteDXRT = xmWritesRD & ((dxMatchRT_XM & usesRT)|(dxMatchRD_XM & d
 assign mwOverwriteDXRS = mwWritesRD & dxMatchRS_MW;
 assign mwOverwriteDXRT = mwWritesRD & ((dxMatchRT_MW & usesRT)|(dxMatchRD_MW & dxReadsRD));
 
-assign overWriteRegA = mwWritesRD & rsFDMatch;
-assign overWriteRegB = mwWritesRD & rtFDMatch;
 
 endmodule
 

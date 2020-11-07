@@ -1,9 +1,10 @@
-module predictor (shouldTakeBranch, XPCidx, DPCidx, Xbranch, Dbranch, taken, clock, reset);
+<<<<<<< HEAD
+module predictor (shouldTakeBranch, XPC, DPC, Xbranch, Dbranch, taken, clock, reset);
 
 input Xbranch, Dbranch, taken, clock, reset;
-input [31:0] XPCidx, DPCidx;
+input [31:0] XPC, DPC;
 output shouldTakeBranch;
 
-predictor_1bit(shouldTakeBranch, XPCidx, DPCidx, Xbranch, Dbranch, taken, clock, reset);
+predictor_1bit(shouldTakeBranch, XPC, DPC, Xbranch, Dbranch, taken, clock, reset);
 
 endmodule
