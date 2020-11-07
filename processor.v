@@ -164,14 +164,15 @@ assign d_stall=overWriteDX;
 	                     .isJB_top(isJB),.pcOut_top(fd_decoder_pc_out),.pcIn_top(fdPCOut),.instructionOut_top(fd_instr_out),.shouldBranchOrJump(shouldBranchOrJump),
 								.instruction_bot(fdDecoderInput_bot),.readRegA_bot(ctrl_readRegA_2),.readRegB_bot(ctrl_readRegB_2), 
 	                     .isJB_bot(isJB_bot),.pcOut_bot(fd_decoder_pc_out_bot),.pcIn_bot(fdPCOut_bot),.instructionOut_bot(fd_instr_out_bot),.stall_bot(stall_bot),
-								.predictor_past_pc(predictor_past_pc),.predictor_past_wrong(predictor_past_wrong)
+								.predictor_past_pc(predictor_past_pc),.predictor_past_wrong(predictor_past_wrong),
+								.past_predicted_taken(branchPredictedTaken),.past_is_branch(dx_isBNE|dx_isBNE_bot|dx_isBLT|dx_isBNE_bot|dx_BEX|dx_BEX_bot)
 								);
 								
 	assign d_FD_T=fd_instr_out;
 	assign d_FD_B=fd_instr_out_bot;
 	wire [31:0] fd_decoder_PC,predictor_past_pc, branch_overwrite_pc,dx_jrAmt_bot;
 	
-	assign predictor_past_pc= branchOverwrite ? branch_overwrite_pc : {32{1'b1}};
+	assign predictor_past_pc=branch_overwrite_pc;
 	assign branch_overwrite_pc= branchOverwrite_top ? dxPCOut : dxPCOut_bot; 
 	assign predictor_past_wrong=branchOverwrite;
 	
