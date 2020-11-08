@@ -1,14 +1,24 @@
 module fdDecoder(instruction_top,readRegA_top,readRegB_top,isJB_top,pcOut_top,pcIn_top,instructionOut_top,shouldBranchOrJump,
 					  instruction_bot,readRegA_bot,readRegB_bot,isJB_bot,pcOut_bot,pcIn_bot,instructionOut_bot,stall_bot,
-					  predictor_past_pc,predictor_past_wrong
+					  predictor_past_pc,predictor_past_wrong,past_predicted_taken,past_is_branch, clock, reset,
+					  
+					  predictorPC, isBranchD, shouldTakeBranch
+					  
 					  );
 
 input[31:0]instruction_top,instruction_bot,pcIn_top,pcIn_bot,predictor_past_pc;
-input predictor_past_wrong;
+input predictor_past_wrong,past_predicted_taken,past_is_branch,clock,reset;
 output[4:0]readRegA_top,readRegB_top,readRegA_bot,readRegB_bot;
 output isJB_top,isJB_bot,shouldBranchOrJump;
 output[31:0]pcOut_top,pcOut_bot,instructionOut_top,instructionOut_bot;
 output stall_bot;
+
+//OUTPUTS FOR PRED DEBUG
+output[31:0] predictorPC;
+output isBranchD, shouldTakeBranch;
+
+assign isBranchD = isBranch_top|isBranch_bot;
+//OUTPUTS FOR PRED DEBUG
 
 wire isSw,isLW, isJumpRegister,isBNE,isBLT,overflow,isJump,isJal,isBEX,RAW_RS,RAW_RT;
 wire isSw_bot,isLW_bot, isJumpRegister_bot,isBNE_bot,isBLT_bot,overflow_bot,isJump_bot,isJal_bot,isBEX_bot;
@@ -104,14 +114,17 @@ assign instructionOut_bot = (isJump|isJump_bot|stall_bot) ? {32{1'b0}} : instruc
  
  
 //BRANCH PREDICTOR
-wire shouldTakeBranch,isBranch_top,isBranch_bot;
-wire[31:0] predictorPC;
+wire isBranch_top,isBranch_bot;
+//wire shouldTakeBranch;
+//wire[31:0] predictorPC;
 
 assign predictorPC= isBranch_top ? pcIn_top : pcIn_bot;
 assign isBranch_top=(isBNE|isBLT|isBEX);
 assign isBranch_bot=(isBNE_bot|isBLT_bot|isBEX_bot);
-
-predictor myPredictor (.pc(predictorPC),.shouldTakeBranch(shouldTakeBranch),.past_pc(predictor_past_pc),.past_wrong(predictor_past_wrong));
+//pc,is_branch,shouldTakeBranch,past_pc,past_wrong,past_is_branch,past_predicted_taken
+predictor myPredictor (.pc(predictorPC),.is_branch(isBranch_top|isBranch_bot),
+.shouldTakeBranch(shouldTakeBranch),.past_pc(predictor_past_pc),.past_wrong(predictor_past_wrong),.past_is_branch(past_is_branch),.past_predicted_taken(past_predicted_taken),
+.clock(clock),.reset(reset));
 assign shouldBranchOrJump = (isJal|isJump|isJal_bot|isJump_bot) ? 1'b1 : ((isBranch_top|isBranch_bot)&shouldTakeBranch); 
 
 
