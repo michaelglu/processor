@@ -12,8 +12,8 @@ input past_wrong,is_branch,past_is_branch,past_predicted_taken,clock,reset;
 
 output shouldTakeBranch;
 
-//predictor_1bit bpred1bit(shouldTakeBranch, past_pc, pc, past_is_branch, is_branch, past_predicted_taken, past_wrong, clock, reset);
-predictor_2bit bpred2bit(shouldTakeBranch, past_pc, pc, past_is_branch, is_branch, past_predicted_taken, past_wrong, clock, reset);
+predictor_1bit bpred1bit(shouldTakeBranch, past_pc, pc, past_is_branch, is_branch, past_predicted_taken, past_wrong, clock, reset);
+//predictor_2bit bpred2bit(shouldTakeBranch, past_pc, pc, past_is_branch, is_branch, past_predicted_taken, past_wrong, clock, reset);
 
 //assign shouldTakeBranch=1'b0;
 
