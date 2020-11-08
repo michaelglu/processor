@@ -1,23 +1,21 @@
-addi $1, $0, 10
-addi $2, $0, 25
-addi $3, $0, 42
-addi $10, $0, 100
-add $9, $0, $0
-add $4, $0, $0
-add $5, $1, $1	# loop starts here
-add $6, $5, $2
-add $7, $6, $3
-addi $8, $7, -86	# first counter
-sw $4, 1($0)
-sw $8, 2($0)
-bne $9, $0, 2
-addi $9, $9, 1	# even
-j 18
-add $4, $1, $0	# odd
-addi $9, $9, -1
-add $8, $9, $0
-lw $8, 2($0)		# loop end
-bne $8, $10, -14
-addi $4, $4, 1 	# second counter
-addi $8, $8, -100
-bne $4, $1, -17
+addi $1, $0, 1		# a
+addi $2, $0, 2		# b
+addi $3, $0, 3		# c
+addi $4, $0, 0		# i, counter
+addi $5, $0, 0		# j, counter
+addi $6, $0, 20		# max i
+addi $7, $0, 10		# max j
+addi $8, $0, 1		# q = even/odd var, loop starts here
+addi $4, $4, 1		# i = i + 1
+add $1, $1, $2
+add $9, $1, $3		# y = a + b + c
+bne $8, $0, 3		# if q is odd, goto 14
+sub $10, $8, $3		# even, i.e. q = 0
+j 16				# jump to loop end
+add $2, $2, $9		# odd, b = b + 1
+addi $8, $8, -1		# q = 0
+bne $4, $6, -10		# loop end, branch to loop start if i =/= max i
+add $4, $0, $0		# i = 0
+addi $5, $5, 1 		# j = j + 1
+bne $5, $7, -13		# branch to loop start if j =/= max j
+addi $11, $0, 100	
