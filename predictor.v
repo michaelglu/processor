@@ -14,6 +14,8 @@ output shouldTakeBranch;
 
 predictor_1bit bpred1bit(shouldTakeBranch, past_pc, pc, past_is_branch, is_branch, past_predicted_taken, past_wrong, clock, reset);
 //predictor_2bit bpred2bit(shouldTakeBranch, past_pc, pc, past_is_branch, is_branch, past_predicted_taken, past_wrong, clock, reset);
+//predictor_correlated_2bit correlated2bit(shouldTakeBranch, past_pc, pc, past_is_branch, is_branch, past_predicted_taken, past_wrong, clock, reset);
+//predictor_correlated_3bit correlated3bit(shouldTakeBranch, past_pc, pc, past_is_branch, is_branch, past_predicted_taken, past_wrong, clock, reset);
 
 //assign shouldTakeBranch=1'b0;
 

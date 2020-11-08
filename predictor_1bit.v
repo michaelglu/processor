@@ -22,7 +22,7 @@ regout119,regout120,regout121,regout122,regout123,regout124,regout125,regout126,
 
 assign taken = (predictedTaken & ~predictedWrong) | (~predictedTaken & predictedWrong);
 
-decoder_7bit XPCdecoder(XPCidx[7:1], XPCdecoder_out);
+decoder_7bit XPCdecoder(XPCidx[6:0], XPCdecoder_out);
 
 and and0(Xbranchand[0], Xbranch, XPCdecoder_out[0]);
 register_1 register0(counter_plus_one, clock, Xbranchand[0], reset, regout0);
@@ -284,7 +284,7 @@ register_1 register127(counter_plus_one, clock, Xbranchand[127], reset, regout12
 
 
 
-mux_128_1_bit counter_mux(.select(XPCidx[7:1]),.in0(regout0),.in1(regout1),.in2(regout2),.in3(regout3),.in4(regout4),
+mux_128_1_bit counter_mux(.select(XPCidx[6:0]),.in0(regout0),.in1(regout1),.in2(regout2),.in3(regout3),.in4(regout4),
 .in5(regout5),.in6(regout6),.in7(regout7),.in8(regout8),.in9(regout9),.in10(regout10),.in11(regout11),
 .in12(regout12),.in13(regout13),.in14(regout14),.in15(regout15),.in16(regout16),.in17(regout17),
 .in18(regout18),.in19(regout19),.in20(regout20),.in21(regout21),.in22(regout22),.in23(regout23),
@@ -307,7 +307,7 @@ mux_128_1_bit counter_mux(.select(XPCidx[7:1]),.in0(regout0),.in1(regout1),.in2(
 .in120(regout120),.in121(regout121),.in122(regout122),.in123(regout123),.in124(regout124),.in125(regout125),
 .in126(regout126),.in127(regout127), .out(counter_mux_out));
 
-mux_128_1_bit counter_mux1(.select(DPCidx[7:1]),.in0(regout0),.in1(regout1),.in2(regout2),.in3(regout3),.in4(regout4),
+mux_128_1_bit counter_mux1(.select(DPCidx[6:0]),.in0(regout0),.in1(regout1),.in2(regout2),.in3(regout3),.in4(regout4),
 .in5(regout5),.in6(regout6),.in7(regout7),.in8(regout8),.in9(regout9),.in10(regout10),.in11(regout11),
 .in12(regout12),.in13(regout13),.in14(regout14),.in15(regout15),.in16(regout16),.in17(regout17),
 .in18(regout18),.in19(regout19),.in20(regout20),.in21(regout21),.in22(regout22),.in23(regout23),
