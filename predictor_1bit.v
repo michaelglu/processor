@@ -1,11 +1,11 @@
-module predictor_1bit (shouldTakeBranch, XPCidx, DPCidx, Xbranch, Dbranch, taken, clock, reset);
+module predictor_1bit (shouldTakeBranch, XPCidx, DPCidx, Xbranch, Dbranch, predictedTaken, predictedWrong, clock, reset);
 
-input Xbranch, Dbranch, taken, clock, reset;
+input Xbranch, Dbranch, predictedTaken, predictedWrong, clock, reset;
 input [31:0] XPCidx, DPCidx;
 output shouldTakeBranch;
 
 wire[128:0] XPCdecoder_out, Xbranchand;
-wire counter_mux_out, is_branch_mux_out, counter_plus_one;
+wire counter_mux_out, is_branch_mux_out, counter_plus_one, taken;
 wire regout0,regout1,regout2,regout3,regout4,regout5,regout6,regout7,regout8,regout9,regout10,
 regout11,regout12,regout13,regout14,regout15,regout16,regout17,regout18,regout19,regout20,regout21,
 regout22,regout23,regout24,regout25,regout26,regout27,regout28,regout29,regout30,regout31,regout32,
@@ -19,6 +19,8 @@ regout99,regout100,regout101,regout102,regout103,regout104,regout105,regout106,r
 regout109,regout110,regout111,regout112,regout113,regout114,regout115,regout116,regout117,regout118,
 regout119,regout120,regout121,regout122,regout123,regout124,regout125,regout126,regout127;
 
+
+assign taken = (predictedTaken & ~predictedWrong) | (~predictedTaken & predictedWrong);
 
 decoder_7bit XPCdecoder(XPCidx[7:1], XPCdecoder_out);
 
