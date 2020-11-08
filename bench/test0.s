@@ -1,29 +1,23 @@
-.text
-main:
-addi $r1, $r0, 10
-addi $r2, $r0, 25
-addi $r3, $r0, 42
-addi $r10, $r0, 100
-add $r9, $r0, $r0
-add $r4, $r0, $r0
-loopstart:
-add $r5, $r1, $r1
-add $r6, $r5, $r2
-add $r7, $r6, $r3
-addi $r8, $r7, -86 # first counter
-sw $r4, 1($r0)
-sw $r8, 2($r0)
-bne $r9, $r0, odd
-even:
-addi $r9, $r9, 1
-j loopend
-odd:
-add $r4, $r1, $r0
-addi $r9, $r9, -1
-add $r8, $r9, $r0
-loopend:
-lw $r8, 2($r0)
-bne $r8, $r10, loopstart
-addi $r4, $r4, 1 # second counter
-addi $r8, $r8, -100
-bne $r4, $r1, loopstart
+addi $1, $0, 10
+addi $2, $0, 25
+addi $3, $0, 42
+addi $10, $0, 100
+add $9, $0, $0
+add $4, $0, $0
+add $5, $1, $1	# loop starts here
+add $6, $5, $2
+add $7, $6, $3
+addi $8, $7, -86	# first counter
+sw $4, 1($0)
+sw $8, 2($0)
+bne $9, $0, 2
+addi $9, $9, 1	# even
+j 18
+add $4, $1, $0	# odd
+addi $9, $9, -1
+add $8, $9, $0
+lw $8, 2($0)		# loop end
+bne $8, $10, -14
+addi $4, $4, 1 	# second counter
+addi $8, $8, -100
+bne $4, $1, -17
