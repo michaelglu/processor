@@ -1,29 +1,21 @@
-.text
-main:
-addi $r1, $r0, 10
-addi $r2, $r0, 25
-addi $r3, $r0, 42
-addi $r10, $r0, 100
-add $r9, $r0, $r0
-add $r4, $r0, $r0
-loopstart:
-add $r5, $r1, $r1
-add $r6, $r5, $r2
-add $r7, $r6, $r3
-addi $r8, $r7, -86 # first counter
-sw $r4, 1($r0)
-sw $r8, 2($r0)
-bne $r9, $r0, odd
-even:
-addi $r9, $r9, 1
-j loopend
-odd:
-add $r4, $r1, $r0
-addi $r9, $r9, -1
-add $r8, $r9, $r0
-loopend:
-lw $r8, 2($r0)
-bne $r8, $r10, loopstart
-addi $r4, $r4, 1 # second counter
-addi $r8, $r8, -100
-bne $r4, $r1, loopstart
+addi $1, $0, 1		# a
+addi $2, $0, 2		# b
+addi $3, $0, 3		# c
+addi $4, $0, 0		# i, counter
+addi $5, $0, 0		# j, counter
+addi $6, $0, 20		# max i
+addi $7, $0, 10		# max j
+addi $8, $0, 1		# q = even/odd var, loop starts here
+addi $4, $4, 1		# i = i + 1
+add $1, $1, $2
+add $9, $1, $3		# y = a + b + c
+bne $8, $0, 3		# if q is odd, goto 14
+sub $10, $8, $3		# even, i.e. q = 0
+j 16				# jump to loop end
+add $2, $2, $9		# odd, b = b + 1
+addi $8, $8, -1		# q = 0
+bne $4, $6, -10		# loop end, branch to loop start if i =/= max i
+add $4, $0, $0		# i = 0
+addi $5, $5, 1 		# j = j + 1
+bne $5, $7, -13		# branch to loop start if j =/= max j
+addi $11, $0, 100	

@@ -17,6 +17,11 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 	 d_stall, d_cross_t,
 	 d_cross_b,
 
+	 
+	 predictorPC, predictor_past_pc,
+	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch,
+
+
 
 	 debugImemAddr1,debugImemAddr2,debugImem1,debugImem2, debugRegA1,debugRegA2,debugRegB1,debugRegVal,debugRegB2,debugDmemAddr,debugDmem,debugDmemWren
 	 );
@@ -35,11 +40,21 @@ output d_stall;
 		output debugDmemWren;
 	 output[4:0] debugRegA1,debugRegA2,debugRegB1,debugRegB2;
 //	 output debugStall;
+
 	 
 	 assign debugImem1=q_imem_1;
 	 assign debugImemAddr1=address_imem_1;
 	 assign debugImem2=q_imem_2;
 	 assign debugImemAddr2=address_imem_2;
+	 
+	 //DEBUG PREDICTOR
+	 
+	 
+	 output[31:0] predictorPC, predictor_past_pc;
+	 output isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch;
+	 
+	 //DEBUG PRED
+
 
     /** IMEM **/
     // Figure out how to generate a Quartus syncram component and commit the generated verilog file.
@@ -150,9 +165,12 @@ output d_stall;
 	 d_XM_T,d_XM_B,d_XM_O,d_XM_PC,
 	 d_MW_T,d_MW_B,
 	 d_stall, d_cross_t,
-	 d_cross_b
+
+	 d_cross_b,
 	
-	
+	 predictorPC, predictor_past_pc,
+	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch
+
 	 
     );
 

@@ -1,42 +1,26 @@
-.text
-# we will take the mod base a of every number from 0 to b, right-exclusive
-# returns sum of remainders in register $v0
-addi $r4, $r0, 0 
-addi $r5, $r0, 3	# a
-addi $r16, $r16, 0	# stores result
-addi $r17, $r0, 11	# b,
-
-loop:
-	addi $r8, $r8, 1		# counter
-	jal mod
-	add $r10, $r2, $r0		# remainder
-	add $r16, $r16, $r10
-	addi $r8, $r8, 1
-	add $r4, $r8, $r0
-	blt $r8, $r17, loop		# loop b times
-	j exit					# exit program
-
-# -----------------------------------------------------------------------------
-# mod takes two arguments, a and b, and returns result of 
-# a mod b
-mod:
-	addi $r29, $r29, -12	# Adjust stack pointer
-	sw $r16, 8($r29)		# Save $r16
-	sw $r17, 4($r29)		# Save $r17
-	sw $r18, 0($r29)		# Save $r18
-
-	# a mod b = a - (a/b) * b
-	div $r16, $r4, $r5
-	mul $r17, $r16, $r5
-	sub $r18, $r4, $r17
-
-	add $r2, $r18, $r0 		# puts result in register $v0
-
-	lw $r18, 0($r29)		# Restore $r18
-	lw $r17, 4($r29)		# Restore $r17
-	lw $r16, 8($r29)		# Restore $r16
-	addi $r29, $r29, 12		# Adjust stack pointer
-	jr $r31
-
-exit:
-	add $r2, $r16, $r0
+addi $4, $0, 0 			# a
+addi $5, $0, 3			# b
+addi $16, $16, 0		# stores result
+addi $17, $0, 11		# max b
+addi $8, $8, 1			# i = i + 1, start of loop
+jal 12
+add $10, $2, $0			# remainder
+add $16, $16, $10
+addi $4, $4, 1
+blt $8, $17, -6			# loop b times
+j 25					# exit program
+addi $29, $29, -12		# mod takes two arguments, a and b, and returns result of a mod b
+sw $16, 8($29)			# Save $16
+sw $17, 4($29)			# Save $17
+sw $18, 0($29)			# Save $18
+div $16, $4, $5			# a mod b = a - (a/b) * b
+mul $17, $16, $5
+sub $18, $4, $17
+add $2, $18, $0 		# puts result in register $v0
+lw $18, 0($29)			# restore $18
+lw $17, 4($29)			# restore $17
+lw $16, 8($29)			# restore $16
+addi $29, $29, 12		# Adjust stack pointer
+jr $31
+add $2, $16, $0
+addi $1, $0, 1			# exit with code 1 
