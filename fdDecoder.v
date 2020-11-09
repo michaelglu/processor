@@ -33,12 +33,13 @@ assign isBEX_bot=(instruction_bot[31]&~instruction_bot[30]&instruction_bot[29]&i
 
 
 //stalling
-assign stall_bot = ((isLW_bot|isSw_bot)&(isLW|isSw))|RAW_RS|RAW_RT|((isMult_top|isDiv_top)&(isMult_bot|isDiv_bot))|((isBranch_top & ~shouldBranchOrJump)&isBranch_bot);
+assign stall_bot = ((isLW_bot|isSw_bot)&(isLW|isSw))|RAW_RS|RAW_RT|((isMult_top|isDiv_top)&(isMult_bot|isDiv_bot))|((isBranch_top & ~shouldBranchOrJump)&isBranch_bot)|loadDep;
 
 rwHazardController stallControl_corss(.inDX(instruction_bot),.inXM(instruction_top),.xmOverwriteDXRS(RAW_RS),
 	 .xmOverwriteDXRT(RAW_RT),.ovfXM(1'b0),.ovfMW(1'b0));
 	 
-	 
+wire loadDep;	 
+stallController stallControl(.in1(instruction_bot),.in2(instruction_top),.inM(instruction_top),.multOngoing(isMult_top|isDiv_top),.stall(loadDep));
 	 
 wire isMult_top,isDiv_top,isMult_bot, isDiv_bot;
 assign isMult_top = (~instruction_top[31]&~instruction_top[30]&~instruction_top[29]&~instruction_top[28]&~instruction_top[27])
