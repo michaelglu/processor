@@ -88,10 +88,12 @@ module processor(
 	 d_MW_T,d_MW_B,
 	 d_stall,
 	 d_cross_t,
+
 	 d_cross_b,
 	 
 	 predictorPC, predictor_past_pc,
 	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch
+
 	
 	  
 );
@@ -104,6 +106,7 @@ output[31:0]	 d_FD_T,d_FD_B,d_DX_T,d_DX_B,d_XM_T,d_XM_B,d_MW_T,d_MW_B,d_XM_O,d_X
 output d_stall;
 output[3:0]d_cross_t,d_cross_b;
 
+
 //OUTPUTS FOR PRED DEBUG
 output[31:0] predictorPC, predictor_past_pc;
 output isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch;
@@ -114,6 +117,7 @@ assign past_is_branch = dx_isBNE|dx_isBNE_bot|dx_isBLT|dx_isBLT_bot|dx_BEX|dx_BE
 
 
 assign d_stall=overWriteDX;
+
 
     // Control signals
     input clock, reset;
@@ -151,8 +155,7 @@ assign d_stall=overWriteDX;
 	 adder_cla_32_bit pc_bot (.in1(pcOut),.in2({32{1'b0}}),.cin({1'b1}),.sum(pcOut_bot),.overflow(address_imem2_ovf));
 	 assign address_imem_1=pcOut[11:0];
 	 assign address_imem_2=pcOut_bot[11:0];
-	 
-	 
+
 	 wire [31:0]fd_instr_in,fd_instr_in_bot,fd_decoder_pc_out,fd_decoder_pc_out_bot,fd_instr_out,fd_instr_out_bot;
 	 wire[31:0] dx_decoder_pc_out,dx_decoder_pc_out_bot,dx_inst_in,dx_inst_in_bot;
 	 assign fd_instr_in= (overWriteFD|overWriteDX) ?{32{1'b0}} : q_imem_1;
@@ -164,19 +167,28 @@ assign d_stall=overWriteDX;
 	 wire [31:0] fdDecoderInput,fdDecoderInput_bot, branchPC;
 	 assign fdDecoderInput = stall ? {32{1'b0}} : fdIR;
 	 assign fdDecoderInput_bot = stall ? {32{1'b0}} : fdIR_bot;
-	 wire isJB,isJB_bot,shouldBranchOrJump,stall_bot;
-	
+
+
+	wire doneStalling,amStalling;
+
+ wire isJB,isJB_bot,shouldBranchOrJump,stall_bot,stalled_for_both,clearFF;
+
+
 
 	wire doneStalling,amStalling;
 //	assign amStalling=(stall_bot&~doneStalling);
 	
 	d_flip_flop stallbotFF (.d(stall_bot), .q(amStalling), .clk(clock), .ena(1'b1), .aclr(reset));
+	
+	d_flip_flop stallBOT_ALL (.d(1'b1), .q(stalled_for_both), .clk(clock), .ena(amStalling&stall), .aclr(clearFF|reset));
+	d_flip_flop count_1 (.d(stalled_for_both), .q(clearFF), .clk(clock), .ena(1'b1), .aclr(reset));
 
-	fdDecoder fd_decoder(.instruction_top(amStalling?{32{1'b0}}:fdDecoderInput),.readRegA_top(ctrl_readRegA_1),.readRegB_top(ctrl_readRegB_1), 
+	fdDecoder fd_decoder(.instruction_top((amStalling|stalled_for_both)?{32{1'b0}}:fdDecoderInput),.readRegA_top(ctrl_readRegA_1),.readRegB_top(ctrl_readRegB_1), 
 	                     .isJB_top(isJB),.pcOut_top(fd_decoder_pc_out),.pcIn_top(fdPCOut),.instructionOut_top(fd_instr_out),.shouldBranchOrJump(shouldBranchOrJump),
 								.instruction_bot(fdDecoderInput_bot),.readRegA_bot(ctrl_readRegA_2),.readRegB_bot(ctrl_readRegB_2), 
 	                     .isJB_bot(isJB_bot),.pcOut_bot(fd_decoder_pc_out_bot),.pcIn_bot(fdPCOut_bot),.instructionOut_bot(fd_instr_out_bot),.stall_bot(stall_bot),
 								.predictor_past_pc(predictor_past_pc),.predictor_past_wrong(predictor_past_wrong),
+
 								.past_predicted_taken(branchPredictedTaken),.past_is_branch(dx_isBNE|dx_isBNE_bot|dx_isBLT|dx_isBLT_bot|dx_BEX|dx_BEX_bot),
 								.clock(clock), .reset(reset),
 								
@@ -190,6 +202,7 @@ assign d_stall=overWriteDX;
 	wire [31:0] fd_decoder_PC, branch_overwrite_pc,dx_jrAmt_bot;
 	
 	//wire[31:0] predictor_past_pc;
+
 	
 	assign predictor_past_pc=branch_overwrite_pc;
 	assign branch_overwrite_pc= branchOverwrite_top ? dxPCOut : dxPCOut_bot; 
@@ -198,8 +211,10 @@ assign d_stall=overWriteDX;
 	assign fd_decoder_PC=isJB ? fd_decoder_pc_out: fd_decoder_pc_out_bot;
 	assign overWriteFD=((isJB|isJB_bot)&shouldBranchOrJump);
 	assign pcIn= overWriteDX ? dx_decoder_pc_out: fd_decoder_PC;
-	 assign dx_inst_in= overWriteDX ?{32{1'b0}} :fd_instr_out;
-	 assign dx_inst_in_bot= (overWriteDX|stall_bot|(shouldBranchOrJump&isJB)) ?{32{1'b0}} :fd_instr_out_bot;
+
+	 assign dx_inst_in= overWriteDX|stall ?{32{1'b0}} :fd_instr_out;
+	 assign dx_inst_in_bot= (overWriteDX|stall|stall_bot|(shouldBranchOrJump&isJB)) ?{32{1'b0}} :fd_instr_out_bot;
+
 
 
 	 d_pipe_reg dx_latch(.data_inA_top(dlatch_in_a),.data_inA_bot(dlatch_in_a_bot),.we(dxWE)
@@ -225,10 +240,12 @@ assign d_stall=overWriteDX;
 	.cross_overWriteRS_top(cross_overwriteDXRS_top),.cross_overWriteRT_top(cross_overwriteDXRT_top),.cross_overWriteRS_bot(cross_overwriteDXRS_bot),.cross_overWriteRT_bot(cross_overwriteDXRT_bot)
 	 
 	 );
+
 	 
 	 assign d_DX_T=dxIR;
 	 assign d_DX_B=dxIR_bot;
 	 
+
 	 wire [31:0]xmOvr,xmOvr_bot;
 	 assign xmOvr = xm_setX ?data_xmSetX :xmO;
 	 assign xmOvr_bot = xm_setX_bot ?data_xmSetX_bot :xmO_bot;
@@ -263,7 +280,7 @@ assign d_stall=overWriteDX;
 	 assign x_latch_instruciton_in= (isMult|isDiv) ?{32{1'b0}}:dxIR;
 	 assign x_latch_instruciton_in_bot= (isMult_bot|isDiv_bot|dx_isJR|branchOverwrite_top) ?{32{1'b0}}:dxIR_bot;
 	 
-	 
+
 	 
 	 multdivLatch multDivLatch(.in(multIR),.we((isMult|isDiv|isMult_bot|isDiv_bot)&~dx_isJR),.clock(clockinv),.out(multInstruction),.reset(reset),.done(multReady|multException),.inProgress(multInProgress));
 	 
@@ -282,6 +299,7 @@ assign d_stall=overWriteDX;
 	 assign data_xmSetX[26:0]=xmIR[26:0];
 	 assign data_xmSetX_bot[31:27]={5{1'b0}};
 	 assign data_xmSetX_bot[26:0]=xmIR_bot[26:0];
+
 	 
 
 	 
@@ -291,10 +309,10 @@ assign d_stall=overWriteDX;
 	 assign address_dmem=xm_mem_top?xmO[11:0]:xmO_bot[11:0];
 	 assign data=xm_mem_top?xmB:xmB_bot;
 	 
-	 assign d_XM_T=xmIR;
-	 assign d_XM_B=xmIR_bot;
+//	 assign d_XM_T=xmIR;
+	// assign d_XM_B=xmIR_bot;
 	 assign d_XM_PC=xmB_bot;
-	 assign d_XM_O=xmO_bot;
+//	 assign d_XM_O=xmO_bot;
 
 	 
 	 m_pipe_reg mw_latch (.dataO_top(xmO),.dataD_top(q_dmem),.we(mwWE), .clk(clock),.reset(reset),
@@ -372,6 +390,7 @@ assign d_stall=overWriteDX;
 	   rwHazardController rwHazController_cross_top_m(.inFD(fdIR_bot),.inDX(dxIR_bot),.inXM(xmIR_bot),.inMW(mwIR),.overWriteXMRD(cross_overWriteXMRD_bot),
 	 .ovfXM(xm_ovf_bot),.ovfMW(mw_ovf));
 	 //bot->top
+
 	 
 	  rwHazardController rwHazController_cross_top(.inFD(fdIR),.inDX(dxIR),.inXM(xmIR_bot),.inMW(mwIR_bot),.xmOverwriteDXRS(cross_overwriteDXRS_top[0]),
 	 .xmOverwriteDXRT(cross_overwriteDXRT_top[0]),.mwOverwriteDXRS(cross_overwriteDXRS_top[1]),.mwOverwriteDXRT(cross_overwriteDXRT_top[1]),
@@ -386,14 +405,15 @@ assign d_stall=overWriteDX;
 	 assign d_cross_b[3:2]=cross_overwriteDXRT_bot;
 	 
 	 
-	 stallController stallControl(.in1(fdIR),.in2(dxIR),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_everything_top));
+	 stallController stallControl(.in1(stall_bot? {32{1'b0}} :fdIR),.in2(dxIR),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_everything_top));
 	 stallController stallControl_bot(.in1(fdIR_bot),.in2(dxIR_bot),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_everything_bot));
 	 
-	  stallController stallControl_cross_top(.in1(fdIR),.in2(dxIR_bot),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_cross_1));
+	  stallController stallControl_cross_top(.in1(stall_bot? {32{1'b0}} :fdIR),.in2(dxIR_bot),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_cross_1));
 	 stallController stallControl_cross_bot(.in1(fdIR_bot),.in2(dxIR),.inM(multInstruction),.multOngoing(multInProgress),.stall(stall_cross_2));
 	 
 	 assign stall=stall_everything_top|stall_everything_bot|stall_cross_1|stall_cross_2;
 	 
+
 	 wire stall_everything_top, stall_everything_bot,stall,stallInv,stall_cross_1,stall_cross_2;
 	 wire [1:0] overwriteDXRS,overwriteDXRT,overwriteDXRS_bot,overwriteDXRT_bot;
 	 wire[1:0] cross_overwriteDXRS_top,cross_overwriteDXRT_top,cross_overwriteDXRS_bot,cross_overwriteDXRT_bot;

@@ -1,24 +1,25 @@
 module fdDecoder(instruction_top,readRegA_top,readRegB_top,isJB_top,pcOut_top,pcIn_top,instructionOut_top,shouldBranchOrJump,
 					  instruction_bot,readRegA_bot,readRegB_bot,isJB_bot,pcOut_bot,pcIn_bot,instructionOut_bot,stall_bot,
-					  predictor_past_pc,predictor_past_wrong,past_predicted_taken,past_is_branch, clock, reset,
-					  
-					  predictorPC, isBranchD, shouldTakeBranch
-					  
+					  predictor_past_pc,predictor_past_wrong,past_predicted_taken,past_is_branch, clock, reset,					  
+					  predictorPC, isBranchD, shouldTakeBranch				  
 					  );
 
 input[31:0]instruction_top,instruction_bot,pcIn_top,pcIn_bot,predictor_past_pc;
 input predictor_past_wrong,past_predicted_taken,past_is_branch,clock,reset;
+
 output[4:0]readRegA_top,readRegB_top,readRegA_bot,readRegB_bot;
 output isJB_top,isJB_bot,shouldBranchOrJump;
 output[31:0]pcOut_top,pcOut_bot,instructionOut_top,instructionOut_bot;
 output stall_bot;
+
 
 //OUTPUTS FOR PRED DEBUG
 output[31:0] predictorPC;
 output isBranchD, shouldTakeBranch;
 
 assign isBranchD = isBranch_top|isBranch_bot;
-//OUTPUTS FOR PRED DEBUG
+
+
 
 wire isSw,isLW, isJumpRegister,isBNE,isBLT,overflow,isJump,isJal,isBEX,RAW_RS,RAW_RT;
 wire isSw_bot,isLW_bot, isJumpRegister_bot,isBNE_bot,isBLT_bot,overflow_bot,isJump_bot,isJal_bot,isBEX_bot;
@@ -43,12 +44,17 @@ assign isBEX_bot=(instruction_bot[31]&~instruction_bot[30]&instruction_bot[29]&i
 
 
 //stalling
-assign stall_bot = ((isLW_bot|isSw_bot)&(isLW|isSw))|RAW_RS|RAW_RT|((isMult_top|isDiv_top)&(isMult_bot|isDiv_bot))|((isBranch_top & ~shouldBranchOrJump)&isBranch_bot);
+
+assign stall_bot = ((isLW_bot|isSw_bot)&(isLW|isSw))|RAW_RS|RAW_RT|((isMult_top|isDiv_top)&(isMult_bot|isDiv_bot))|((isBranch_top & ~shouldBranchOrJump)&isBranch_bot)|loadDep;
+
 
 rwHazardController stallControl_corss(.inDX(instruction_bot),.inXM(instruction_top),.xmOverwriteDXRS(RAW_RS),
 	 .xmOverwriteDXRT(RAW_RT),.ovfXM(1'b0),.ovfMW(1'b0));
 	 
-	 
+
+wire loadDep;	 
+stallController stallControl(.in1(instruction_bot),.in2(instruction_top),.inM(instruction_top),.multOngoing(isMult_top|isDiv_top),.stall(loadDep));
+
 	 
 wire isMult_top,isDiv_top,isMult_bot, isDiv_bot;
 assign isMult_top = (~instruction_top[31]&~instruction_top[30]&~instruction_top[29]&~instruction_top[28]&~instruction_top[27])
@@ -114,17 +120,22 @@ assign instructionOut_bot = (isJump|isJump_bot|stall_bot) ? {32{1'b0}} : instruc
  
  
 //BRANCH PREDICTOR
+
 wire isBranch_top,isBranch_bot;
 //wire shouldTakeBranch;
 //wire[31:0] predictorPC;
+
 
 assign predictorPC= isBranch_top ? pcIn_top : pcIn_bot;
 assign isBranch_top=(isBNE|isBLT|isBEX);
 assign isBranch_bot=(isBNE_bot|isBLT_bot|isBEX_bot);
 //pc,is_branch,shouldTakeBranch,past_pc,past_wrong,past_is_branch,past_predicted_taken
+
 predictor myPredictor (.pc(predictorPC),.is_branch(isBranch_top|isBranch_bot),
 .shouldTakeBranch(shouldTakeBranch),.past_pc(predictor_past_pc),.past_wrong(predictor_past_wrong),.past_is_branch(past_is_branch),.past_predicted_taken(past_predicted_taken),
 .clock(clock),.reset(reset));
+
+
 assign shouldBranchOrJump = (isJal|isJump|isJal_bot|isJump_bot) ? 1'b1 : ((isBranch_top|isBranch_bot)&shouldTakeBranch); 
 
 

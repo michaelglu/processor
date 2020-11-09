@@ -7,6 +7,7 @@ module predictor (pc,is_branch,shouldTakeBranch,past_pc,past_wrong,past_is_branc
 // past_predicted_taken: whether the prediction of the past branch from execute was taken or not taken
 // shouldTakeBranch: shoud take current branch in decode?
 
+
 input[31:0]pc,past_pc;
 input past_wrong,is_branch,past_is_branch,past_predicted_taken,clock,reset;
 
