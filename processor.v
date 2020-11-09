@@ -175,7 +175,7 @@ assign d_stall=overWriteDX;
 
 
 
-	wire doneStalling,amStalling;
+
 //	assign amStalling=(stall_bot&~doneStalling);
 	
 	d_flip_flop stallbotFF (.d(stall_bot), .q(amStalling), .clk(clock), .ena(1'b1), .aclr(reset));
