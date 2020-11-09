@@ -39,7 +39,7 @@ rwHazardController stallControl_corss(.inDX(instruction_bot),.inXM(instruction_t
 	 .xmOverwriteDXRT(RAW_RT),.ovfXM(1'b0),.ovfMW(1'b0));
 	 
 wire loadDep;	 
-stallController stallControl(.in1(instruction_bot),.in2(instruction_top),.inM({32{1'b1}}),.multOngoing(1'b0),.stall(loadDep));
+stallController stallControl(.in1(instruction_bot),.in2(instruction_top),.inM(instruction_top),.multOngoing(isMult_top|isDiv_top),.stall(loadDep));
 	 
 wire isMult_top,isDiv_top,isMult_bot, isDiv_bot;
 assign isMult_top = (~instruction_top[31]&~instruction_top[30]&~instruction_top[29]&~instruction_top[28]&~instruction_top[27])
