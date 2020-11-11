@@ -26,7 +26,7 @@ add		$14, $8, $8
 add		$0, $0, $0	
 add		$0, $0, $0
 add		$0, $0, $0
-mul		$16, $14, $4		
+div		$16, $14, $4		
 blt		$8, $10, -23		# loop until i = i_max
 j 40						# jump to exit
 # fibonacci
