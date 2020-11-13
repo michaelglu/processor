@@ -92,7 +92,7 @@ module processor(
 	 d_cross_b,
 	 
 	 predictorPC, predictor_past_pc,
-	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch
+	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch,d_stall_bot,d_O_FD,d_O_DX,d_mispredict
 
 	
 	  
@@ -103,7 +103,7 @@ module processor(
 output[31:0] debugFD,debugDX,debugXM,debugMW,debugALUinA,debugALUinB;
 output debugStall;*/
 output[31:0]	 d_FD_T,d_FD_B,d_DX_T,d_DX_B,d_XM_T,d_XM_B,d_MW_T,d_MW_B,d_XM_O,d_XM_PC;
-output d_stall;
+output d_stall,d_stall_bot,d_O_FD,d_O_DX,d_mispredict;
 output[3:0]d_cross_t,d_cross_b;
 
 
@@ -116,7 +116,11 @@ assign past_is_branch = dx_isBNE|dx_isBNE_bot|dx_isBLT|dx_isBLT_bot|dx_BEX|dx_BE
 //OUTPUTS FOR PRED DEBUG
 
 
-assign d_stall=overWriteDX;
+assign d_stall=stall;
+assign d_stall_bot=stall_bot;
+assign d_O_FD=overWriteFD;
+assign d_O_DX=overWriteDX;
+assign d_mispredict=branchOverwrite;
 
 
     // Control signals

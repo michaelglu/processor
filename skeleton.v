@@ -14,12 +14,12 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 	 d_DX_T,d_DX_B,
 	 d_XM_T,d_XM_B,
 	 d_MW_T,d_MW_B,d_XM_O,d_XM_PC,
-	 d_stall, d_cross_t,
+	 d_stall,d_stall_bot,d_O_FD,d_O_DX, d_cross_t,
 	 d_cross_b,
 
 	 
 	 predictorPC, predictor_past_pc,
-	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch,
+	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch,d_mispredict,
 
 
 
@@ -36,7 +36,7 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 	 output [11:0]debugImemAddr1,debugImemAddr2,debugDmemAddr;
 	 output[31:0]debugImem1,debugImem2,debugDmem;
 	 output[31:0]	 d_FD_T,d_FD_B,d_DX_T,d_DX_B,d_XM_T,d_XM_B,d_MW_T,d_MW_B,d_XM_O,d_XM_PC,debugRegVal;
-output d_stall;
+output d_stall,d_stall_bot,d_O_FD,d_O_DX,d_mispredict;
 		output debugDmemWren;
 	 output[4:0] debugRegA1,debugRegA2,debugRegB1,debugRegB2;
 //	 output debugStall;
@@ -169,7 +169,7 @@ output d_stall;
 	 d_cross_b,
 	
 	 predictorPC, predictor_past_pc,
-	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch
+	 isBranchD, shouldTakeBranch, predictor_past_wrong, branchPredictedTaken, past_is_branch,d_stall_bot,d_O_FD,d_O_DX,d_mispredict
 
 	 
     );
