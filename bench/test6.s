@@ -3,7 +3,7 @@ addi	$5, $0, 1			# b = 1
 addi	$6, $0, 1			# c = 1
 addi	$8, $0, 0			# i, counter
 addi	$9, $0, 0			# p, parity
-addi	$10, $0, 120		# i_max
+addi	$10, $0, 30			# i_max
 addi	$11, $0, 0			# s, sum of f(n) and p(n) terms
 addi	$8, $8, 1			# i = i + 1, loop start
 addi	$9, $9, 1			# p = p + 1

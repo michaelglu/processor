@@ -8,7 +8,7 @@ addi	$11, $0, 0			# thr_counter
 addi	$12, $0, 3			# thr_max
 addi	$13, $0, 0			# fou_counter
 addi	$14, $0, 4			# fou_max
-addi	$15, $0, 400		# y_max
+addi	$15, $0, 200		# y_max
 addi	$4, $4, 1			# x = x + 1, loop start
 addi	$9, $9, 1			# two_counter++
 addi	$11, $11, 1			# thr_counter++

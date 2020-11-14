@@ -6,8 +6,8 @@ addi 	$8, $0, 0			# i, counter
 addi 	$9, $0, 0			# j, counter
 addi	$10, $0, 0			# k, counter
 addi 	$11, $0, 2			# i_max
-addi 	$12, $0, 50			# j_max
-addi	$13, $0, 4			# k_max
+addi 	$12, $0, 45			# j_max
+addi	$13, $0, 2			# k_max
 addi 	$14, $0, 1			# q = even/odd var, loop starts here
 addi 	$8, $8, 1			# i = i + 1
 add 	$5, $5, $6			# a = a + b

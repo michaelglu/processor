@@ -1,6 +1,6 @@
 addi	$4, $0, 1			# n = 1
 add		$8, $0, $0			# i = 0, counter
-addi	$9, $0, 40			# i_max = 45
+addi	$9, $0, 20			# i_max
 addi	$8, $8, 1			# i = i + 1, start of loop
 addi 	$29, $29, -8		# Adjust stack pointer, save temps before function call
 sw		$8, 4($29)			# Save $8

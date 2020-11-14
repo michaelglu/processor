@@ -2,8 +2,8 @@ addi 	$4, $0, 1			# a = 1
 addi 	$5, $0, 2			# b = 2
 addi 	$6, $0, 3			# c = 3
 addi 	$7, $0, 4			# d = 4
-addi 	$11, $0, 25			# m = 30 iterations
-addi 	$13, $13, 40		# n = 60 iterations
+addi 	$11, $0, 15			# m, iterations
+addi 	$13, $13, 35		# n, iterations
 addi 	$29, $29, -16		# Adjust stack pointer, start of function
 sw		$16, 12($29)		# Save $16
 sw		$17, 8($29)			# Save $17
@@ -29,37 +29,10 @@ lw 		$16, 12($29)		# restore $16
 addi 	$29, $29, 16		# Adjust stack pointer, end of function
 addi	$2, $2, 1			# increment branch counter
 blt 	$12, $11, -25		# foo repeats until i = m
-div 	$4, $4, $8
+addi 	$4, $12, 1
 addi 	$20, $20, 1			# pad with noop
 addi 	$21, $21, 1			# pad with noop
 addi 	$22, $22, 1			# pad with noop
 addi	$2, $2, 1			# increment branch counter
 blt 	$12, $13, -31		# foo repeats until i = n
-addi 	$4, $0, 200000		# a = 200000
-addi 	$6, $0, 3			# c = 5
-addi 	$7, $0, 8			# d = 8
-jal 51
-add 	$16, $4, $0			# goo
-add 	$17, $17, $0		# beginning of loop
-sub 	$18, $0, $5
-addi 	$20, $20, 1			# pad with noop
-div 	$16, $16, $7		# a / 2
-addi	$17, $17, 1
-addi 	$18, $18, -1
-addi 	$2, $2, 1			# increment branch counter
-blt 	$11, $16, -8 		# goo repeats until a/2 < m
-j 55
-addi	$5, $0, 10			# b = 10
-addi 	$11, $0, 25			# m = 25
-sub 	$7, $5, $7			# d = b - d
-jr $31
-add 	$12, $0, $0
-addi	$13, $0, 40			# counter, i
-add		$14, $13, $13
-and		$15, $12, $13
-mul		$16, $15, $14
-addi	$13, $13, -1
-addi	$12, $12, 1
-addi	$2, $2, 1			# increment branch counter
-bne		$13, $0, -7
 addi 	$1, $0, 1			# exit with code 1

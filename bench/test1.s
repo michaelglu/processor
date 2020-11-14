@@ -1,7 +1,7 @@
 addi	$16, $0, 0			# reg $16 = 0
 addi	$17, $0, 1			# reg $17 = 1
-addi	$18, $0, 125		# Number of iterations, z
-addi	$19, $0, 250		# Number of iterations, m
+addi	$18, $0, 70			# Number of iterations, z
+addi	$19, $0, 125		# Number of iterations, m
 add		$4, $16, $0			# Agument 1: x ($16)
 add		$5, $17, $0 		# Agument 2: y ($17)
 jal	9						# Save current PC in $ra, and jump to fun
