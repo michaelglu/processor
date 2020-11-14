@@ -89,6 +89,9 @@ module processor(
 	 debugALUinA,
 	 debugALUinB,
 	 debugStall*/
+	 d_stall,
+	 d_mispredict,
+	 d_oFD,d_oDX
 	  
 );
 
@@ -99,7 +102,12 @@ output debugStall;*/
 
     // Control signals
     input clock, reset;
-
+		output d_stall, d_mispredict, d_oFD,d_oDX;
+		assign d_stall=stall;
+		assign d_mispredict = branchOverwrite;
+		assign  d_oFD=overWriteFD;
+		assign d_oDX=overWriteDX;
+		
     // Imem
     output [11:0] address_imem_1,address_imem_2;
     input [31:0] q_imem_1,q_imem_2;

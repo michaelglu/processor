@@ -17,11 +17,11 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 	 debugImem,
 	 debugImemAddr,
 	  debugALUinA,
-	 debugALUinB,debugStall*/
+	 debugALUinB,debugStall*/d_stall,d_mispredict,d_oFD,d_oDX
 	 );
     input clock, reset;
 	 
-	 
+	 output d_stall, d_mispredict,d_oFD,d_oDX;
 	 
 	 /**DEBUG**/
 	output[31:0]debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,debugR7,debugR8,debugR9,debugR10,debugR11,debugR12,debugR13,debugR14,debugR15,debugR16,debugR17,debugR18,debugR19,debugR20,debugR21,debugR22,debugR23,debugR24,debugR25,debugR26,debugR27,debugR28,debugR29,debugR30,debugR31;
@@ -131,6 +131,7 @@ module skeleton(clock, reset,debugR1,debugR2,debugR3,debugR4,debugR5,debugR6,deb
 	debugDX,
 	 debugXM,
 	 debugMW,debugALUinA,debugALUinB,debugStall*/
+	 d_stall, d_mispredict,d_oFD,d_oDX
     );
 
 endmodule
